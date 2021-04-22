@@ -53,9 +53,11 @@ jobs:
       - name: Attach Collection to release
         uses: ncipollo/release-action@v1
         with:
+          token: ${{ secrets.GH_WORKFLOW_PAT }}
           artifacts: "${{ github.workspace }}/dist/*.tar.gz"
+          omitBody: true
           tag: "${{ github.event.release.tag_name }}"
-          token: ${{ secrets.GITHUB_WORKFLOW_PAT }}
+
   ansible-builder-ee:
     runs-on: ubuntu-latest
     env:
