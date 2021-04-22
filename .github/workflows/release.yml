@@ -19,11 +19,11 @@ jobs:
           - 3.8
     steps:
 
-#      - name: "Dump GitHub Context"
-#        env:
-#          GITHUB_CONTEXT: "${{ toJson(github) }}"
-#        run: |
-#          echo "$GITHUB_CONTEXT"
+      #      - name: "Dump GitHub Context"
+      #        env:
+      #          GITHUB_CONTEXT: "${{ toJson(github) }}"
+      #        run: |
+      #          echo "$GITHUB_CONTEXT"
 
       - uses: actions/checkout@v2
         with:
@@ -34,9 +34,22 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Packages
-        run: |
-          pip install poetry && poetry install
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.1.4
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
 
       - name: Login to Quay.io
         uses: docker/login-action@v1
@@ -57,7 +70,7 @@ jobs:
         env:
           IMAGE_TAG: "${{ env.QUAYIO_REPO }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}"
           IMAGE_LATEST: "${{ env.QUAYIO_REPO }}/${{ env.IMAGE_NAME }}:latest"
-        working-directory: ${{ github.workspace }}/builder-ee
+        working-directory: "${{ github.workspace }}/builder-ee"
   site:
     runs-on: ubuntu-latest
     strategy:
@@ -74,9 +87,22 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Packages
-        run: |
-          pip install poetry && poetry install
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.1.4
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
 
       - name: Generate Docs
         run: |

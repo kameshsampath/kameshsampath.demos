@@ -1,11 +1,13 @@
-ENV_FILE := .env
-include ${ENV_FILE}
-export $(shell sed 's/=.*//' ${ENV_FILE})
 CURRENT_DIR = $(shell pwd)
+
+BUILDER_EE_CONTEXT=builder-ee
+BUILDER_EE_FILE=$(CURRENT_DIR)/builder-ee/execution-environment.yml
+CONTAINER_RUNTIME=docker
+ANSIBLE_RUNNER_IMAGE=quay.io/kameshsampath/openshift-demos-ansible-ee
 
 ANSIBLE_BUILDER := poetry run ansible-builder
 
-VERSION=`cat $(FILE)`
+VERSION=`cat version.txt`
 COLLECTION_FQN=kameshsampath.demos
 TEST_ARGS ?= ""
 PYTHON_VERSION ?= `python -c 'import platform; print("{0}.{1}".format(platform.python_version_tuple()[0], platform.python_version_tuple()[1]))'`
