@@ -33,7 +33,7 @@ jobs:
       - name: Set Galaxy Version
         uses: mikefarah/yq@v4.7.0
         with:
-          cmd: yq eval '.version = "${{ steps.release_branch.outputs.semver }}"' /github/workspace/galaxy.yml | tee /github/workspace/galaxy.yml
+          cmd: cat /github/workspace/galaxy.yml | yq eval '.version = "${{ steps.release_branch.outputs.semver }}"' - | tee /github/workspace/galaxy.yml
 
       ## TODO update the requirements.yml  of ee builder
       - name: Push galaxy.yml to release branch
