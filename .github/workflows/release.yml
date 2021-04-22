@@ -4,11 +4,13 @@ on:
   release:
     types:
       - released
+  workflow_dispatch:
 
 jobs:
   ansible-builder-ee:
     runs-on: ubuntu-latest
     env:
+      QUAYIO_REPO: quay.io/kameshsampath
       IMAGE_NAME: openshift-demos-ansible-ee
       IMAGE_TAGS: latest
     strategy:
@@ -53,8 +55,8 @@ jobs:
           podman tag $IMAGE_TAG $IMAGE_LATEST
           podman push $IMAGE_LATEST
         env:
-          IMAGE_TAG: "${{ secrets.QUAYIO_REPO }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}"
-          IMAGE_LATEST: "${{ secrets.QUAYIO_REPO }}/${{ env.IMAGE_NAME }}:latest"
+          IMAGE_TAG: "${{ env.QUAYIO_REPO }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}"
+          IMAGE_LATEST: "${{ env.QUAYIO_REPO }}/${{ env.IMAGE_NAME }}:latest"
         working-directory: ${{ github.workspace }}/builder-ee
   site:
     runs-on: ubuntu-latest
