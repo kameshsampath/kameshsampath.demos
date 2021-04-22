@@ -1,0 +1,202 @@
+:github_url: https://github.com/kameshsampath/kameshsampath.demos/blob/master/plugins/modules/aws_openid_connect_provider.py
+
+.. _ansible_collections.kameshsampath.demos.aws_openid_connect_provider_module:
+
+aws_openid_connect_provider -- Create, Update or Delete OpenID Connect Provider
+===============================================================================
+
+Create, update or delete `AWS IAM OpenID Connect provider <https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html>`_.
+
+
+
+Requirements
+------------
+
+The below requirements are needed on the host that executes this module:
+
+- python >= 2.6
+- boto
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+   
+   # Create an OpenID Provider with URL https://s3.ap-southeast-1.amazonaws.com/rosa-demos-oidc
+   kameshsampath.demos.aws_open_id_connect_provider:
+   state: present
+   url: s3.ap-southeast-1.amazonaws.com/rosa-demos-oidc
+     
+   # Create an OpenID Provider with URL https://s3.ap-southeast-1.amazonaws.com/rosa-demos-oidc
+   # with tags
+   kameshsampath.demos.aws_open_id_connect_provider:
+   state: present
+   url: s3.ap-southeast-1.amazonaws.com/rosa-demos-oidc
+   tags:
+     Name: rosa-demos-oidc
+     Author: kameshsampath
+      
+   # Delete an OpenID Provider with URL https://s3.ap-southeast-1.amazonaws.com/rosa-demos-oidc
+   kameshsampath.demos.aws_open_id_connect_provider:
+   state: absent
+   url: https://s3.ap-southeast-1.amazonaws.com/rosa-demos-oidc
+
+
+
+Notes
+-----
+
+.. note::
+   If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
+
+   Ansible uses the boto configuration file (typically ~/.boto) if no credentials are provided. See https://boto.readthedocs.io/en/latest/boto_config_tut.html
+
+   ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be configured in the boto config file
+
+
+
+
+
+
+Parameters
+----------
+
+aws_access_key (optional)
+  AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.
+
+  If *profile* is set this parameter is ignored.
+
+  Passing the *aws_access_key* and *profile* options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.
+
+  | **type**: str
+
+aws_ca_bundle (optional)
+  The location of a CA Bundle to use when validating SSL certificates.
+
+  Only used for boto3 based modules.
+
+  Note: The CA Bundle is read 'module' side and may need to be explicitly copied from the controller if not run locally.
+
+  | **type**: path
+
+aws_config (optional)
+  A dictionary to modify the botocore configuration.
+
+  Parameters can be found at https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config.
+
+  Only the 'user_agent' key is used for boto modules. See http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto for more boto configuration.
+
+  | **type**: dict
+
+aws_secret_key (optional)
+  AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.
+
+  If *profile* is set this parameter is ignored.
+
+  Passing the *aws_secret_key* and *profile* options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.
+
+  | **type**: str
+
+client_ids (optional)
+  A list of client IDs (also known as audiences).
+
+  If not provided, 'sts.amazonaws.com' is added as default client id
+
+  | **type**: list
+
+debug_botocore_endpoint_logs (optional)
+  Use a botocore.endpoint logger to parse the unique (rather than total) "resource:action" API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.
+
+  | **type**: bool
+  | **default**: no
+
+ec2_url (optional)
+  Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.
+
+  | **type**: str
+
+profile (optional)
+  Uses a boto profile. Only works with boto >= 2.24.0.
+
+  Using *profile* will override *aws_access_key*, *aws_secret_key* and *security_token* and support for passing them at the same time as *profile* has been deprecated.
+
+  *aws_access_key*, *aws_secret_key* and *security_token* will be made mutually exclusive with *profile* after 2022-06-01.
+
+  | **type**: str
+
+purge_client_ids (optional)
+  Delete any Client IDs not specified in the task that are on the OpenID Connect Provider. This means you have to specify all the  Client IDs tags on each task affecting an Provider.
+
+  | **type**: bool
+  | **default**: True
+
+purge_tags (optional)
+  Delete any tags not specified in the task that are on the OpenID Connect Provider. This means you have to specify all the desired tags on each task affecting an Provider.
+
+  | **type**: bool
+  | **default**: True
+
+purge_thumbprints (optional)
+  Delete any Thumbprints not specified in the task that are on the OpenID Connect Provider. This means you have to specify all the Thumbprints tags on each task affecting an Provider.
+
+  | **type**: str
+  | **default**: True
+
+security_token (optional)
+  AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.
+
+  If *profile* is set this parameter is ignored.
+
+  Passing the *security_token* and *profile* options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.
+
+  | **type**: str
+
+state (optional)
+  Whether to create or delete the AWS OpenID Connect Provider
+
+  | **type**: str
+  | **default**: present
+  | **choices**: present, absent
+
+tags (optional)
+  The AWS Resource Tags to add to the OpenID Connect Provider
+
+  | **type**: dict
+
+thumbprints (optional)
+  Optional thumbprint(SHA1) of the Root Certificate Authority associated with the
+
+  Provider URL.  This is usually requried when you have rotating certificates.
+
+  When not provided the fingerprints is computed form the provider url.
+
+  | **type**: list
+
+url (required)
+  The https URL of the identity provider.
+
+  | **type**: str
+
+validate_certs (optional)
+  When set to "no", SSL certificates will not be validated for boto versions >= 2.6.0.
+
+  | **type**: bool
+  | **default**: True
+
+
+
+Return Values
+-------------
+
+provider_arn
+   The Provider ARN of the created OpenId Connect Provider, this returned only during create.
+
+   **sample**:
+
+   .. code-block:: yaml
+
+      arn:aws:iam::1234567890:oidc-provider/s3.ap-southeast-1.amazonaws.com/rosa-demos-oidc
+      ...
+

@@ -1,0 +1,368 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Ansible Role ROSA Demos &mdash; Kamesh&#39;s Ansible Collections for Demos  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Modules" href="../plugins_in_collection.html" />
+    <link rel="prev" title="Add components to OpenShift" href="openshift_spices.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Kamesh's Ansible Collections for Demos
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing the Collection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html#using-the-collection">Using the Collection</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../roles.html">Roles</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="openshift_spices.html">Add components to OpenShift</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Ansible Role ROSA Demos</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#role-variables">Role Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-playbooks">Example Playbooks</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../plugins_in_collection.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../project_info.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../project_info.html#more-information">More information</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../project_info.html#licensing">Licensing</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Kamesh's Ansible Collections for Demos</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../roles.html">Roles</a> &raquo;</li>
+        
+      <li>Ansible Role ROSA Demos</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/kameshsampath/kameshsampath.demos/blob/master/documentation/source/roles/rosa_demos.md" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="ansible-role-rosa-demos">
+<h1>Ansible Role ROSA Demos<a class="headerlink" href="#ansible-role-rosa-demos" title="Permalink to this headline">¶</a></h1>
+<p>Set of Ansible scripts and execution environment that can be used to setup AWS resources that will be used as part of the <a class="reference external" href="https://aws.amazon.com/rosa/">ROSA</a> demos.</p>
+<p>You can do the following with this Ansible role:</p>
+<ul class="simple">
+<li><p>[x] Setup AWS OIDC Provider</p></li>
+<li><p>[x] Setup AWS DynamoDb Provider</p></li>
+<li><p>[x] Setup AWS RDS PostgreSQL Database with its own VPC</p></li>
+<li><p>[x] Setup VPC Peering with AWS RDS PostgreSQL and ROSA</p></li>
+</ul>
+<p><strong>NOTE</strong></p>
+<p>For Windows it’s recommended to use Windows Subsystem for Linux (WSL)</p>
+<div class="section" id="role-variables">
+<h2>Role Variables<a class="headerlink" href="#role-variables" title="Permalink to this headline">¶</a></h2>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-align:left head"><p>Variable Name</p></th>
+<th class="text-align:left head"><p>Description</p></th>
+<th class="text-align:center head"><p>Default value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-align:left"><p>aws_region</p></td>
+<td class="text-align:left"><p>The default AWS region to use for creating the resources</p></td>
+<td class="text-align:center"><p>us-west-2</p></td>
+</tr>
+<tr class="row-odd"><td class="text-align:left"><p>oidc_bucket_name</p></td>
+<td class="text-align:left"><p>The s3 bucket used for holding the OpenId connect provider assets</p></td>
+<td class="text-align:center"><p>rosa-demos-oidc</p></td>
+</tr>
+<tr class="row-even"><td class="text-align:left"><p>rosa_demo_role_name</p></td>
+<td class="text-align:left"><p>The AWS IAM role that will be used as part of the Demos</p></td>
+<td class="text-align:center"><p>ROSADemosRole</p></td>
+</tr>
+<tr class="row-odd"><td class="text-align:left"><p>rosa_demo_policy_name</p></td>
+<td class="text-align:left"><p>The AWS IAM policy that will be used to control what the Kubernetes Service Accounts can do</p></td>
+<td class="text-align:center"><p>ROSADemosPolicy</p></td>
+</tr>
+<tr class="row-even"><td class="text-align:left"><p>rollback</p></td>
+<td class="text-align:left"><p>Clean up all the created AWS resources</p></td>
+<td class="text-align:center"><p>False</p></td>
+</tr>
+<tr class="row-odd"><td class="text-align:left"><p>iam</p></td>
+<td class="text-align:left"><p>Create OpenId Connect Provider and create IAM resources</p></td>
+<td class="text-align:center"><p>False</p></td>
+</tr>
+<tr class="row-even"><td class="text-align:left"><p>create_aws_credentials_file</p></td>
+<td class="text-align:left"><p>Create AWS Credential file</p></td>
+<td class="text-align:center"><p>True</p></td>
+</tr>
+<tr class="row-odd"><td class="text-align:left"><p>dynamodb</p></td>
+<td class="text-align:left"><p>Create AWS DynamoDB</p></td>
+<td class="text-align:center"><p>false</p></td>
+</tr>
+<tr class="row-even"><td class="text-align:left"><p>dynamodb_table_name</p></td>
+<td class="text-align:left"><p>The DynamoDB Table name to use</p></td>
+<td class="text-align:center"><p>Fruits</p></td>
+</tr>
+<tr class="row-odd"><td class="text-align:left"><p>rds</p></td>
+<td class="text-align:left"><p>Create AWS RDS</p></td>
+<td class="text-align:center"><p>false</p></td>
+</tr>
+<tr class="row-even"><td class="text-align:left"><p>rds_database_name</p></td>
+<td class="text-align:left"><p>The RDS Database name</p></td>
+<td class="text-align:center"><p>fruitsdb</p></td>
+</tr>
+<tr class="row-odd"><td class="text-align:left"><p>rds_instance_id</p></td>
+<td class="text-align:left"><p>The RDS Instance id</p></td>
+<td class="text-align:center"><p>rosa-demos</p></td>
+</tr>
+<tr class="row-even"><td class="text-align:left"><p>rds_database_user_name</p></td>
+<td class="text-align:left"><p>The RDS Database user name to connect to</p></td>
+<td class="text-align:center"><p>rosademosrole</p></td>
+</tr>
+<tr class="row-odd"><td class="text-align:left"><p>rds_vpc_name</p></td>
+<td class="text-align:left"><p>The RDS Database VPC name</p></td>
+<td class="text-align:center"><p>rosa-demos-rds-vpc</p></td>
+</tr>
+<tr class="row-even"><td class="text-align:left"><p>rds_vpc_host</p></td>
+<td class="text-align:left"><p>The RDS Database VPC Host</p></td>
+<td class="text-align:center"><p>“192.168.0.0”</p></td>
+</tr>
+<tr class="row-odd"><td class="text-align:left"><p>rds_vpc_cidr</p></td>
+<td class="text-align:left"><p>The RDS Database VPC Host CIDR</p></td>
+<td class="text-align:center"><p>“192.168.0.0/16”</p></td>
+</tr>
+<tr class="row-even"><td class="text-align:left"><p>rds_vpc_subnet_prefix</p></td>
+<td class="text-align:left"><p>The RDS Database VPC subnet prefix</p></td>
+<td class="text-align:center"><p>“24”</p></td>
+</tr>
+<tr class="row-odd"><td class="text-align:left"><p>rds_db_engine</p></td>
+<td class="text-align:left"><p>The RDS Database DB Engine</p></td>
+<td class="text-align:center"><p>postgres</p></td>
+</tr>
+<tr class="row-even"><td class="text-align:left"><p>rds_db_engine_version</p></td>
+<td class="text-align:left"><p>The RDS Database DB Engine version</p></td>
+<td class="text-align:center"><p>“12.5”</p></td>
+</tr>
+<tr class="row-odd"><td class="text-align:left"><p>rds_master_username</p></td>
+<td class="text-align:left"><p>The RDS Database DB master user</p></td>
+<td class="text-align:center"><p>postgres</p></td>
+</tr>
+<tr class="row-even"><td class="text-align:left"><p>rds_master_password</p></td>
+<td class="text-align:left"><p>The RDS Database DB master user password</p></td>
+<td class="text-align:center"><p>postgres123</p></td>
+</tr>
+<tr class="row-odd"><td class="text-align:left"><p>rds_db_instance_type</p></td>
+<td class="text-align:left"><p>The RDS Database DB instance type</p></td>
+<td class="text-align:center"><p>db.t2.micro</p></td>
+</tr>
+<tr class="row-even"><td class="text-align:left"><p>rds_subnet_group</p></td>
+<td class="text-align:left"><p>The RDS Database DB subnet group</p></td>
+<td class="text-align:center"><p>rosa-demos-rds-vpc-subnets-group</p></td>
+</tr>
+<tr class="row-odd"><td class="text-align:left"><p>rds_vpc_peering</p></td>
+<td class="text-align:left"><p>Enable VPC peering between RDS and ROSA</p></td>
+<td class="text-align:center"><p>true</p></td>
+</tr>
+<tr class="row-even"><td class="text-align:left"><p>rds_iam_database_authentication</p></td>
+<td class="text-align:left"><p>Enable RDS IAM authentication</p></td>
+<td class="text-align:center"><p>true</p></td>
+</tr>
+<tr class="row-odd"><td class="text-align:left"><p>rosa_to_rds_vpc_peering</p></td>
+<td class="text-align:left"><p>Enable ROSA - RDS VPC peering</p></td>
+<td class="text-align:center"><p>true</p></td>
+</tr>
+<tr class="row-even"><td class="text-align:left"><p>rosa_cluster_name</p></td>
+<td class="text-align:left"><p>The ROSA cluster name. The scripts will fail when <code class="docutils literal notranslate"><span class="pre">rosa_cluster_name</span></code> is not defined</p></td>
+<td class="text-align:center"><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="example-playbooks">
+<h2>Example Playbooks<a class="headerlink" href="#example-playbooks" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="https://github.com/kameshsampath/kameshampath.demos/tree/master/roles/rosa_demos/examples">examples</a> directory has various playbook examples to get started using this role:</p>
+<p>e.g.</p>
+<p>If you want to set up OpenId Connect Provider with a Policy and Role:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>  ansible-playbook examples/oidc_setup.yml
+</pre></div>
+</div>
+<p>If you don’t have Ansible installed locally, you can use the project <a class="reference external" href="https://github.com/kameshsampath/openshift-demos-ansible-ee">OpenShift Demos Ansible EE</a> to run the playbooks using Docker and <a class="reference external" href="https://ansible-runner.readthedocs.io/en/latest/">Ansible Runner</a>.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../plugins_in_collection.html" class="btn btn-neutral float-right" title="Modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="openshift_spices.html" class="btn btn-neutral float-left" title="Add components to OpenShift" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Kamesh Sampath(@kameshsampath).
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

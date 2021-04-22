@@ -1,0 +1,165 @@
+:github_url: https://github.com/kameshsampath/kameshsampath.demos/blob/master/plugins/modules/aws_open_id_connect_provider_info.py
+
+.. _ansible_collections.kameshsampath.demos.aws_open_id_connect_provider_info_module:
+
+aws_open_id_connect_provider_info -- Retrives information about AWS OpenID Connect Providers.
+=============================================================================================
+
+Retrives AWS OpenID Connect Providers, with ability to filter the providers using the url.
+
+
+
+Requirements
+------------
+
+The below requirements are needed on the host that executes this module:
+
+- python >= 2.6
+- boto
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+   
+   ---
+
+   # Get all available OpenID Connect Providers
+   - name: Get all OpenID Connect Providers
+     kameshsampath.demos.aws_openid_connect_provider_info:
+     
+   # Check if Provider exists by name 
+   - name: Get all OpenID Connect by url
+     kameshsampath.demos.aws_openid_connect_provider_info:
+       url: 'https://example.com/my-provider'
+
+
+
+Notes
+-----
+
+.. note::
+   If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
+
+   Ansible uses the boto configuration file (typically ~/.boto) if no credentials are provided. See https://boto.readthedocs.io/en/latest/boto_config_tut.html
+
+   ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be configured in the boto config file
+
+
+
+
+
+
+Parameters
+----------
+
+aws_access_key (optional)
+  AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.
+
+  If *profile* is set this parameter is ignored.
+
+  Passing the *aws_access_key* and *profile* options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.
+
+  | **type**: str
+
+aws_ca_bundle (optional)
+  The location of a CA Bundle to use when validating SSL certificates.
+
+  Only used for boto3 based modules.
+
+  Note: The CA Bundle is read 'module' side and may need to be explicitly copied from the controller if not run locally.
+
+  | **type**: path
+
+aws_config (optional)
+  A dictionary to modify the botocore configuration.
+
+  Parameters can be found at https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config.
+
+  Only the 'user_agent' key is used for boto modules. See http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto for more boto configuration.
+
+  | **type**: dict
+
+aws_secret_key (optional)
+  AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.
+
+  If *profile* is set this parameter is ignored.
+
+  Passing the *aws_secret_key* and *profile* options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.
+
+  | **type**: str
+
+debug_botocore_endpoint_logs (optional)
+  Use a botocore.endpoint logger to parse the unique (rather than total) "resource:action" API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.
+
+  | **type**: bool
+  | **default**: no
+
+ec2_url (optional)
+  Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.
+
+  | **type**: str
+
+profile (optional)
+  Uses a boto profile. Only works with boto >= 2.24.0.
+
+  Using *profile* will override *aws_access_key*, *aws_secret_key* and *security_token* and support for passing them at the same time as *profile* has been deprecated.
+
+  *aws_access_key*, *aws_secret_key* and *security_token* will be made mutually exclusive with *profile* after 2022-06-01.
+
+  | **type**: str
+
+security_token (optional)
+  AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.
+
+  If *profile* is set this parameter is ignored.
+
+  Passing the *security_token* and *profile* options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.
+
+  | **type**: str
+
+url (optional)
+  The url of the OpenID Connect provider. If not set all the available OpenID Connect Providers will be retrieved.
+
+  | **type**: str
+
+validate_certs (optional)
+  When set to "no", SSL certificates will not be validated for boto versions >= 2.6.0.
+
+  | **type**: bool
+  | **default**: True
+
+
+
+Return Values
+-------------
+
+open_id_connect_providers
+   The list of OpenID Connect Providers with its details such as url, arn, list of client ids, list of associated thumbprints, creation date and tags.
+
+   **sample**:
+
+   .. code-block:: yaml
+
+      - Arn: arn:aws:iam::123456790:oidc-provider/s3.ap-southeast-1.amazonaws.com/rosa-demos-oidc
+        ClientIDList:
+        - sts.amazonaws.com
+        CreateDate: 2015-1-1
+        Tags:
+          Name: rosa-demos-oidc
+          Subject: demos
+        ThumbprintList:
+        - a9d53002e97e00e043244f3d170d6f4c414104fd
+        Url: https://s3.ap-southeast-1.amazonaws.com/rosa-demos-oidc
+
+provider_exist
+   If the provider checked for exists
+
+   **sample**:
+
+   .. code-block:: yaml
+
+      'false'
+
