@@ -8,6 +8,9 @@ on:
 jobs:
   ansible-builder-ee:
     runs-on: ubuntu-18.04
+    env:
+      IMAGE_NAME: openshift-demos-ansible-ee
+      IMAGE_TAGS: latest
     strategy:
       matrix:
         python-version:
