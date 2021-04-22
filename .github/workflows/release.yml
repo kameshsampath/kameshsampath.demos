@@ -46,7 +46,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
+          restore_keys: |
+            ${{ runner.os }}-venv-
 
       - name: Install dependencies
         run: poetry install
@@ -65,7 +67,7 @@ jobs:
         run: |
           poetry env use python
           poetry run ansible-builder build \
-            --container-runtime $CONTAINER_RUNTIME
+            --container-runtime $CONTAINER_RUNTIME \
             --tag $IMAGE_TAG
           $CONTAINER_RUNTIME push $IMAGE_TAG
           $CONTAINER_RUNTIME tag $IMAGE_TAG $IMAGE_LATEST
@@ -102,7 +104,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
+          restore_keys: |
+            ${{ runner.os }}-venv-
 
       - name: Install dependencies
         run: poetry install
