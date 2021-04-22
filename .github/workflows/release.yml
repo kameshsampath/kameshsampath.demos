@@ -7,7 +7,7 @@ on:
 
 jobs:
   ansible-builder-ee:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     env:
       IMAGE_NAME: openshift-demos-ansible-ee
       IMAGE_TAGS: latest
@@ -16,22 +16,25 @@ jobs:
         python-version:
           - 3.8
     steps:
-      - name: "Dump GitHub Context"
-        env:
-          GITHUB_CONTEXT: "${{ toJson(github) }}"
-        run: |
-          echo "$GITHUB_CONTEXT"
+
+#      - name: "Dump GitHub Context"
+#        env:
+#          GITHUB_CONTEXT: "${{ toJson(github) }}"
+#        run: |
+#          echo "$GITHUB_CONTEXT"
 
       - uses: actions/checkout@v2
         with:
           ref: "${{ github.event.ref }}"
 
-      - uses: actions/setup-python@v1
-
-      - uses: BSFishy/pip-action@v1
+      - name: Setup python
+        uses: actions/setup-python@v2
         with:
-          packages: |
-            ansible-builder
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Packages
+        run: |
+          pip install poetry && poetry install
 
       - name: Login to Quay.io
         uses: docker/login-action@v1
@@ -44,7 +47,8 @@ jobs:
       - name: Build the Ansible EE Image
         id: build-image
         run: |
-          ansible-builder build --tag $IMAGE_TAG
+          poetry env use python
+          poetry ansible-builder build --tag $IMAGE_TAG
           podman push $IMAGE_TAG
           podman tag $IMAGE_TAG $IMAGE_LATEST
           podman push $IMAGE_LATEST
@@ -53,7 +57,7 @@ jobs:
           IMAGE_LATEST: "${{ secrets.QUAYIO_REPO }}/${{ env.IMAGE_NAME }}:latest"
         working-directory: ${{ github.workspace }}/builder-ee
   site:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version:

@@ -10,6 +10,7 @@ on:
 jobs:
   update-galaxy-yml:
     runs-on: ubuntu-latest
+    if: "${{ startsWith(github.head_ref,'release-') }}"
     steps:
 
       #      - name: "Dump GitHub Context"
@@ -34,6 +35,7 @@ jobs:
         with:
           cmd: yq eval '.version = "${{ steps.release_branch.outputs.semver }}"' /github/workspace/galaxy.yml | tee /github/workspace/galaxy.yml
 
+      ## TODO update the requirements.yml  of ee builder
       - name: Push galaxy.yml to release branch
         id: push-updates
         env:
