@@ -1,0 +1,31 @@
+---
+- name: "Install Operator::AMQ Streams"
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ lookup('template','kafka/subscription.yaml.j2') | from_yaml  }}"
+    wait: yes
+
+- name: "Install Red Hat::AMQ Streams"
+  include_tasks: utils/wait_for_operator_and_sub.yml
+  vars:
+    subscription_name: amq-streams-operator
+
+- name: "Create Kafka Namespace"
+  community.kubernetes.k8s:
+    state: present
+    kind: Namespace
+    name: "{{ kakfa_cluster_namespace }}"
+
+- name: "Create Kafka cluster::{{ kakfa_cluster_name }}"
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ item | from_yaml }}"
+    wait: yes
+    wait_timeout: 600
+    wait_sleep: 10
+    wait_condition:
+      type: Ready
+  no_log: False
+  register: amq_streams_status
+  with_file:
+   - "{{ amq_streams_cr }}"

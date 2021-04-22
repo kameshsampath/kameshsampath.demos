@@ -1,0 +1,101 @@
+#######################################################################################
+## Thumbprints Update
+#######################################################################################
+- name: "Test::Thumbprints - for OpenID Connect Provider with {{ url }}"
+  aws_open_id_connect_provider:
+    state: present
+    url: "{{ url }}"
+    thumbprints:
+      - f3d170d6f4c414104fda9d53002e97e00e043244
+    tags:
+      Name: test-add
+  register: openid_provider_update
+
+- name: "Test::Thumbprints - Retrieve Test OpenID Connect Provider Info"
+  aws_open_id_connect_provider_info:
+    url: "{{ url }}"
+  register: openid_provider_check_out
+
+- name: "Test::Thumbprints - Set Updated Provider Fact"
+  set_fact:
+    open_id_connect_provider: "{{ openid_provider_check_out.open_id_connect_providers[0] }}"
+
+#- name: "Test::Update Thumbprints"
+#  debug:
+#    var: open_id_connect_provider
+
+- name: "Test:: Check Updated Provider for Thumbprints"
+  assert:
+    that:
+      - open_id_connect_provider.Tags | length == 1
+      - "{{ open_id_connect_provider.ThumbprintList[0] == 'f3d170d6f4c414104fda9d53002e97e00e043244' }}"
+
+- name: "Test::No Purge Thumbprints - for OpenID Connect Provider with {{ url }}"
+  aws_open_id_connect_provider:
+    state: present
+    url: "{{ url }}"
+    purge_thumbprints: false
+    thumbprints:
+      - A9D53002E97E00E043244F3D170D6F4C414104FD
+    tags:
+      Name: test-add
+  register: openid_provider_update
+
+- name: "Test::No Purge Thumbprints - Retrieve Test OpenID Connect Provider Info"
+  aws_open_id_connect_provider_info:
+    url: "{{ url }}"
+  register: openid_provider_check_out
+
+- name: "Test::No Purge Thumbprints - Set Updated Provider Fact"
+  set_fact:
+    open_id_connect_provider_thumbprints: "{{ openid_provider_check_out.open_id_connect_providers[0].ThumbprintList | sort }}"
+
+#- name: "Test::No Purge Thumbprints Update Thumbprints"
+#  debug:
+#    var: open_id_connect_provider_thumbprints
+
+- name: "Test:: No Purge Thumbprints Check Updated Provider for Thumbprints"
+  assert:
+    that:
+      - open_id_connect_provider_thumbprints | length == 2
+      - "{{ open_id_connect_provider_thumbprints[0] == 'a9d53002e97e00e043244f3d170d6f4c414104fd' }}"
+      - "{{ open_id_connect_provider_thumbprints[1] == 'f3d170d6f4c414104fda9d53002e97e00e043244' }}"
+
+- name: "Test::Five Thumbprints - for OpenID Connect Provider with {{ url }}"
+  aws_open_id_connect_provider:
+    state: present
+    url: "{{ url }}"
+    thumbprints:
+      - f3d170d6f4c414104fda9d53002e97e00e043244
+      - f3d170d6f4c414104fda9d53002e97e00e043245
+      - f3d170d6f4c414104fda9d53002e97e00e043246
+      - f3d170d6f4c414104fda9d53002e97e00e043247
+      - f3d170d6f4c414104fda9d53002e97e00e043248
+      - f3d170d6f4c414104fda9d53002e97e00e043249
+      - f3d170d6f4c414104fda9d53002e97e00e043250
+    tags:
+      Name: test-add
+  register: openid_provider_update
+
+- name: "Test::Five Thumbprints - Retrieve Test OpenID Connect Provider Info"
+  aws_open_id_connect_provider_info:
+    url: "{{ url }}"
+  register: openid_provider_check_out
+
+- name: "Test::Five Thumbprints - Set Updated Provider Fact"
+  set_fact:
+    open_id_connect_provider_thumbprints: "{{ openid_provider_check_out.open_id_connect_providers[0].ThumbprintList | sort }}"
+
+#- name: "Test::Five Thunmbprints - List"
+#  debug:
+#    var: open_id_connect_provider_thumbprints
+
+- name: "Test:: Five Thumbprints Check Updated Provider for Thumbprints"
+  assert:
+    that:
+      - open_id_connect_provider_thumbprints | length == 5
+      - "{{ open_id_connect_provider_thumbprints[0] == 'f3d170d6f4c414104fda9d53002e97e00e043244' }}"
+      - "{{ open_id_connect_provider_thumbprints[1] == 'f3d170d6f4c414104fda9d53002e97e00e043245' }}"
+      - "{{ open_id_connect_provider_thumbprints[2] == 'f3d170d6f4c414104fda9d53002e97e00e043246' }}"
+      - "{{ open_id_connect_provider_thumbprints[3] == 'f3d170d6f4c414104fda9d53002e97e00e043247' }}"
+      - "{{ open_id_connect_provider_thumbprints[4] == 'f3d170d6f4c414104fda9d53002e97e00e043248' }}"

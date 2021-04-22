@@ -1,0 +1,23 @@
+---
+exclude_paths:
+  - .cache/
+  - .github/
+  - bin/
+  - templates/
+
+use_default_rules: true
+
+#  quiet: true
+#  verbosity: 1
+
+warn_list:
+  - no-changed-when
+  - command-instead-of-shell
+  - yaml
+
+skip_list:
+  - skip_this_tag
+  - git-latest
+
+# Enable checking of loop variable prefixes in roles
+loop_var_prefix: "rosa_demos_"

@@ -1,0 +1,22 @@
+---
+- name: "Set RDS Facts"
+  set_fact:
+    rosa_cluster_vpc_regx: "^(?P<clusterName>{{ rosa_cluster_name }})-(?P<clusterId>[a-zA-Z0-9]+)-(?P<vpcSuffix>vpc)$"
+    rosa_private_route_table_regx: "^(?P<clusterName>{{ rosa_cluster_name }})-(?P<clusterId>[a-zA-Z0-9]+)-(?P<routeTableType>private)-(?P<awsRegion>.*)$"
+
+- include: create.yml
+  when: not rollback
+
+- name: "Fail when VPC Peering is needed but ROSA Cluster name is not defined"
+  fail:
+    msg: "ROSA cluster name not set, set it with variable 'rosa_cluster_name'"
+  when: rosa_to_rds_vpc_peering and rosa_cluster_name is not defined
+
+- include: vpc_peering.yml
+  when: not rollback and rosa_to_rds_vpc_peering
+
+- include: vpc_peering_check.yml
+  when: not rollback and rosa_to_rds_vpc_peering
+
+- include: rollback.yml
+  when: rollback

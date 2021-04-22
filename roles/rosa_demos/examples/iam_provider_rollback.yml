@@ -1,0 +1,15 @@
+- name: Rollback AWS with OpenID Connect Provider
+  hosts: localhost
+  connection: local
+
+  collections:
+    - kameshsampath.demos
+    -
+  vars:
+    oidc_bucket_name: rosa-demos-oidc
+    rollback: true
+    aws_region: us-west-2
+    iam: true
+
+  roles:
+    - kameshsampath.demos.rosa_demos

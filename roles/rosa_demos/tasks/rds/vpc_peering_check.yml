@@ -1,0 +1,75 @@
+---
+###################################################
+## Deploy App in OpenShift to check Peering
+###################################################
+
+- name: "RDS::ROSA Peer Check Kubernetes Facts"
+  set_fact:
+    vpc_peer_testing_ns: rosa-demos-vpc-peer-test
+    netcat_test_command: "nc -w 5 -zvv {{ rosa_demos_rds_db_host }} {{ rosa_demos_rds_db_port }}"
+
+- name: "ROSA::RDS Create Test Namespace"
+  community.kubernetes.k8s:
+    api_version: v1
+    kind: Namespace
+    state: present
+    name: "{{ vpc_peer_testing_ns }}"
+  when: rosa_demos_rds_db_id is defined
+
+- name: "ROSA::RDS Deploy netcat Pod"
+  community.kubernetes.k8s:
+    api_version: v1
+    kind: Pod
+    state: present
+    name: "{{ vpc_peer_testing_ns }}"
+    definition:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: netcat-test
+        labels:
+          app: netcat-test
+        namespace: "{{ vpc_peer_testing_ns }}"
+      spec:
+        containers:
+          - name: hello-openshift
+            image: docker.io/busybox
+            command:
+              - tail
+              - -f
+              - /dev/null
+  register: netacat_test_pod
+  when: rosa_demos_rds_db_id is defined
+
+- name: "ROSA::RDS Check Peering"
+  community.kubernetes.k8s_exec:
+    namespace: "{{ vpc_peer_testing_ns }}"
+    pod: netcat-test
+    command: "{{ netcat_test_command }}"
+    validate_certs: false
+  register: netcat_command_status
+  ignore_errors: true
+  when: netacat_test_pod is defined
+
+- name: "ROSA::RDS Peering Test Failed"
+  debug:
+    msg: "Unable to connect to RDS"
+  ignore_errors: true
+  when: netacat_test_pod is defined and netcat_command_status.return_code != 0
+
+- name: "ROSA::RDS Undeploy netcat Pod"
+  community.kubernetes.k8s:
+    api_version: v1
+    kind: Pod
+    state: absent
+    name: "{{ vpc_peer_testing_ns }}"
+    namespace: "{{ vpc_peer_testing_ns }}"
+  when: netacat_test_pod is defined
+
+- name: "ROSA::RDS Delete Test Namespace"
+  community.kubernetes.k8s:
+    api_version: v1
+    kind: Namespace
+    state: absent
+    name: "{{ vpc_peer_testing_ns }}"
+  when: netacat_test_pod is defined

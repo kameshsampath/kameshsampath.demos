@@ -1,0 +1,21 @@
+---
+- name: "Create {{ dynamodb_table_name }} DynamoDB Table"
+  community.aws.dynamodb_table:
+    name: "{{ dynamodb_table_name }}"
+    region: "{{ aws_region }}"
+    hash_key_name: fruitName
+    hash_key_type: STRING
+    range_key_name: create_time
+    range_key_type: NUMBER
+    read_capacity: 1
+    write_capacity: 2
+    tags:
+      application: rosa-demos
+  when: not rollback
+
+- name: "Drop {{ dynamodb_table_name }} DynamoDB Table"
+  community.aws.dynamodb_table:
+    name: "{{ dynamodb_table_name }}"
+    region: "{{ aws_region }}"
+    state: absent
+  when: rollback

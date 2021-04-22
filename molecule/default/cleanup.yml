@@ -1,0 +1,21 @@
+---
+- name: Cleanup
+  hosts: instance
+
+  collections:
+    - kameshsampath.demos
+    - community.aws
+    - community.crypto
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    rollback: true
+    aws_region: ap-southeast-1
+    iam: true
+    dynamodb: false
+    rds: false
+    vpc_peering: false
+    rosa_cluster_name: kameshs-demos
+
+  roles:
+   - kameshsampath.demos.rosa_demos

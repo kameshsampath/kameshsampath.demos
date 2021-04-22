@@ -1,0 +1,101 @@
+---
+- name: Create Cloud Profile Directory
+  file:
+    path: "{{ workshopper_home }}/{{ cloud_profile  }}"
+    state: directory
+
+- name: Generate Htpass file
+  htpasswd:
+      path: "{{ workshopper_home }}/{{ cloud_profile }}/htpass.users"
+      name: "{{ item }}"
+      password: "{{ user_password }}"
+  with_sequence:
+    start="{{ users.start }}" end="{{ users.end }}" format="{{ users.prefix|default('user') }}%02x"
+
+- name: Add OpenShift Admin user
+  htpasswd:
+      path: "{{ workshopper_home }}/{{ cloud_profile }}/htpass.users"
+      name: "{{ users.ocpadmin_username | default('ocpadmin') }}"
+      password: "{{ ocpadmin_password }}"
+  register: gen_htpass
+
+- name: "Remove  {{ htpasswdidp_secret_name }} if it exists"
+  community.kubernetes.k8s:
+    state: absent
+    api_version: v1
+    kind: Secret
+    name:  "{{ htpasswdidp_secret_name }}"
+    namespace: openshift-config
+  when: openshift_admin_user != 'kubeadmin' and gen_htpass.changed
+
+- name: "Create  {{ htpasswdidp_secret_name }}"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ htpasswdidp_secret_name }}"
+        namespace: openshift-config
+      data:
+        htpasswd: "{{ item|b64encode }}"
+  with_file: "{{ workshopper_home }}/{{ cloud_profile }}/htpass.users"
+  when: gen_htpass.changed
+
+- name: "Add {{ htpasswdidp_name }} Auth Provider"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: config.openshift.io/v1
+      kind: OAuth
+      metadata:
+        name: cluster
+        namespace: openshift-config
+      spec:
+        identityProviders:
+         - name: "{{ htpasswdidp_name }}"
+           type: HTPasswd
+           mappingMethod: claim
+           htpasswd:
+             fileData:
+               name: "{{ htpasswdidp_secret_name }}"
+  register: outh_provider_result
+  when: gen_htpass.changed
+
+- name: Wait for the Auth provider rollout
+  pause:
+    seconds: 30
+  when: outh_provider_result and outh_provider_result.changed
+
+- name: Add cluster-admin role to ocpadmin
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: cluster-admins
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: cluster-admin
+      subjects:
+      - apiGroup: rbac.authorization.k8s.io
+        kind: User
+        name: ocpadmin
+  when: gen_htpass.changed
+  notify:
+    - ReLogin with new OpenShift Admin
+    - Update OpenShift Auth Key
+
+- name: Run handlers immediately
+  meta: flush_handlers
+
+- name: "Remove default kubeadmin user"
+  community.kubernetes.k8s:
+    state: absent
+    api_version: v1
+    kind: Secret
+    name:  "kubeadmin"
+    namespace: kube-system
+  when: remove_kube_admin and openshift_admin_user != 'kubeadmin'

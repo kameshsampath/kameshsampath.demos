@@ -1,0 +1,35 @@
+---
+self_hosted_binary: /usr/local/bin/self-hosted-linux
+pkcs_key_file: "sa-singer.pub"
+aws_region: "us-west-2"
+oidc_bucket_name: "rosa-demos-oidc"
+oidc_issuer_url: "https://s3.{{ aws_region }}.amazonaws.com/{{ oidc_bucket_name }}"
+rosa_demo_role_name: ROSADemosRole
+rosa_demo_policy_name: ROSADemosPolicy
+rollback: false
+oidc: false
+create_aws_credentials_file: true
+iam: true
+
+## DynamoDB
+dynamodb: false
+dynamodb_table_name: Fruits
+
+# RDS
+rds: false
+rds_database_name: fruitsdb
+rds_instance_id: rosa-demos
+rds_database_user_name: "{{ rosa_demo_role_name|lower }}"
+rds_vpc_name: rosa-demos-rds-vpc
+rds_vpc_host: "192.168.0.0"
+rds_vpc_cidr: "{{ rds_vpc_host }}/16"
+rds_vpc_subnet_prefix: "24"
+rds_db_engine: postgres
+rds_db_engine_version: "12.5"
+rds_master_username: postgres
+rds_master_password: postgres123
+rds_db_instance_type: db.t2.micro
+rds_subnet_group: rosa-demos-rds-vpc-subnets-group
+rds_vpc_peering: true
+rds_iam_database_authentication: true
+rosa_to_rds_vpc_peering: true

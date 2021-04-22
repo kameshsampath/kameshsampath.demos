@@ -1,0 +1,22 @@
+---
+- name: Converge
+  hosts: instance
+
+  collections:
+    - kameshsampath.demos
+    - community.aws
+    - community.crypto
+    - community.kubernetes
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    rollback: false
+    aws_region: ap-southeast-1
+    iam: false
+    dynamodb: true
+    rds: false
+    vpc_peering: false
+    rosa_cluster_name: kameshs-demos
+
+  roles:
+    - kameshsampath.demos.rosa_demos

@@ -1,0 +1,188 @@
+---
+- name: "Rollback::RDS::Get VPC Info"
+  amazon.aws.ec2_vpc_net_info:
+    region: "{{ aws_region }}"
+    filters:
+      "tag:Name": "{{ rds_vpc_name }}"
+  register: rds_vpc
+
+# - debug:
+#     var: rds_vpc
+
+- name: "Rollback::RDS::Get VPC Details"
+  set_fact:
+    rds_vpc_id: "{{ rds_vpc.vpcs[0].vpc_id }}"
+    rds_vpc_cidr: "{{ rds_vpc.vpcs[0].cidr_block }}"
+    rds_vpc_owner_id: "{{ rds_vpc.vpcs[0].owner_id }}"
+  when: rds_vpc.vpcs | length == 1
+
+- name: "Rollback::ROSA::Get VPC Info"
+  amazon.aws.ec2_vpc_net_info:
+    region: "{{ aws_region }}"
+  register: rosa_vpc
+
+- name: "Rollback::ROSA::Get VPC Details"
+  set_fact:
+    rosa_vpc_id: "{{ rosa_demos_item.vpc_id }}"
+    rosa_vpc_cidr: "{{ rosa_demos_item.cidr_block }}"
+    rosa_vpc_owner_id: "{{ rosa_demos_item.owner_id }}"
+  loop: "{{ rosa_vpc.vpcs }}"
+  when:
+    - rosa_demos_item.tags
+    - rosa_demos_item.tags.Name | regex_search(rosa_cluster_vpc_regx)
+  loop_control:
+    extended: true
+    loop_var: rosa_demos_item
+    label: "{{ rosa_demos_item.vpc_id | default('') }}"
+
+- name: "Rollback::RDS::Delete Database"
+  rds_instance:
+    region: "{{ aws_region }}"
+    db_instance_identifier: "{{ rds_instance_id }}-{{ rds_db_engine }}"
+    skip_final_snapshot: true
+    state: absent
+
+- name: "Rollback::ROSA::Route Table Info"
+  community.aws.ec2_vpc_route_table_info:
+    region: "{{ aws_region }}"
+    filters:
+      vpc-id: "{{ rosa_vpc_id }}"
+  register: rosa_rtbs
+
+# - name: Display Source Table Details
+#   debug:
+#     var: rosa_rtbs
+
+- name: "Rollback::ROSA::Private Route Table Details"
+  set_fact:
+    source_rtb_id: "{{ rosa_demos_item.id }}"
+    source_rtb_routes: "{{ rosa_demos_item.routes }}"
+  loop: "{{ rosa_rtbs.route_tables }}"
+  when:
+    - rosa_demos_item.associations | length >= 1
+    - rosa_demos_item.tags
+    - rosa_demos_item.tags.Name | regex_search(rosa_private_route_table_regx)
+  loop_control:
+    extended: true
+    loop_var: rosa_demos_item
+    label: "{{ rosa_demos_item.tags.Name | default('Route Table ' + rosa_demos_item.id) }}"
+
+## TODO #4 remove the ROSA to RDS Route
+# - name: "ROSA::Remove RDS Route"
+
+- name: "Rollback::Retrieve ROSA to RDS VPC Peer"
+  community.aws.ec2_vpc_peering_info:
+    region: "{{ aws_region }}"
+    filters:
+      "tag:Name": "ROSA To RDS"
+  register: rosa_rds_vpc_peers
+
+# - debug:
+#     var: rosa_rds_vpc_peers
+
+- name: "Rollback::Remove ROSA OpenShift to RDS VPC Peering"
+  community.aws.ec2_vpc_peer:
+    region: "{{ aws_region }}"
+    peering_id: "{{ rosa_demos_item.vpc_peering_connection_id }}"
+    state: absent
+  loop: "{{ rosa_rds_vpc_peers.result }}"
+  loop_control:
+    loop_var: rosa_demos_item
+    label: "{{ rosa_demos_item.tags.Name | default( rosa_demos_item.vpc_peering_connection_id ) }}"
+  when: rds_vpc_id is defined
+
+# - name: "RDS::Get VPC Debug"
+#   debug:
+#     var: rds_vpc_id
+#   when: rds_vpc_id is defined
+
+- name: "Rollback::RDS:: Remove subnet group"
+  community.aws.rds_subnet_group:
+    state: absent
+    region: "{{ aws_region }}"
+    name: "{{ rds_subnet_group }}"
+  when: rds_vpc_id is defined
+
+- name: "Rollback::RDS::Get VPC Subnets Info"
+  amazon.aws.ec2_vpc_subnet_info:
+    region: "{{ aws_region }}"
+    filters:
+      vpc-id: "{{ rds_vpc_id }}"
+  register: rds_vpc_subnets
+  when: rds_vpc_id is defined
+
+# - debug:
+#     var: rds_vpc_subnets
+
+- name: "Rollback::RDS::Delete VPC {{ rds_vpc_name }} Subnets"
+  amazon.aws.ec2_vpc_subnet:
+    vpc_id: "{{ rds_vpc_id }}"
+    region: "{{ aws_region }}"
+    cidr: "{{ rosa_demos_item.cidr_block }}"
+    state: absent
+  loop: "{{ rds_vpc_subnets.subnets }}"
+  loop_control:
+    label: "{{ rosa_demos_item.subnet_id }}"
+    loop_var: rosa_demos_item
+  when: rds_vpc_id is defined
+
+- name: "Rollback::RDS::Get Route Tables Info"
+  community.aws.ec2_vpc_route_table_info:
+    region: "{{ aws_region }}"
+    filters:
+      vpc-id: "{{ rds_vpc_id }}"
+  register: rds_vpc_rtbs
+  when: rds_vpc_id is defined
+
+# - debug:
+#     var: rds_vpc_rtbs
+
+# Remove all Route tables than the main one, which gets removed
+# when the VPC is deleted
+- name: "Rollback::RDS:: Remove VPC Route Tables"
+  community.aws.ec2_vpc_route_table:
+    state: absent
+    region: "{{ aws_region }}"
+    route_table_id: "{{ rosa_demos_item.id }}"
+    lookup: id
+  loop: "{{ rds_vpc_rtbs.route_tables }}"
+  loop_control:
+    loop_var: rosa_demos_item
+    label: "{{ rosa_demos_item.tags.Name | default( rosa_demos_item.id ) }}"
+  when: rds_vpc_id is defined and rosa_demos_item.associations | length == 1 and not rosa_demos_item.associations[0].main
+
+- name: "Rollback::RDS::Get RDS VPC Security Groups"
+  amazon.aws.ec2_group_info:
+    region: "{{ aws_region }}"
+    filters:
+      vpc_id: "{{ rds_vpc_id }}"
+  register: rds_vpc_security_groups
+  when: rds_vpc_id is defined
+
+# - debug:
+#     var: rds_vpc_security_groups
+
+# Remove all security group other than default, which gets
+# deleted when VPC is deleted
+- name: "Rollback::RDS::Delete RDS VPC Security Groups"
+  amazon.aws.ec2_group:
+    group_id: "{{ rosa_demos_item.group_id }}"
+    region: "{{ aws_region }}"
+    state: absent
+  loop: "{{ rds_vpc_security_groups.security_groups }}"
+  loop_control:
+    label: "{{ rosa_demos_item.group_name }}"
+    loop_var: rosa_demos_item
+  when: rds_vpc_id is defined and not rosa_demos_item.group_name == "default"
+
+# TODO #5 - Deleting VPC sometimes fails even when its dependencies
+# are removed
+- name: "Rollback::RDS::Delete VPC {{ rds_vpc_name }}"
+  amazon.aws.ec2_vpc_net:
+    name: "{{ rds_vpc_name }}"
+    region: "{{ aws_region }}"
+    cidr_block: "{{ rds_vpc_cidr }}"
+    purge_cidrs: true
+    state: absent
+  ignore_errors: true
+  when: rds_vpc_id is defined

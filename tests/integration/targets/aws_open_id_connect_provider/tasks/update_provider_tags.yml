@@ -1,0 +1,59 @@
+---
+#######################################################################################
+## Tags Update and Purge
+#######################################################################################
+- name: "Test::Update Tags for  OpenID Connect Provider with {{ url }}"
+  aws_open_id_connect_provider:
+    state: present
+    url: "{{ url }}"
+    tags:
+      Name: test-add
+      Subject: Test
+  register: openid_provider_update
+
+- name: "Test::Retrieve Test OpenID Connect Provider Info"
+  aws_open_id_connect_provider_info:
+    url: "{{ url }}"
+  register: openid_provider_check_out
+
+- name: "Test: Set Updated Provider Fact"
+  set_fact:
+    open_id_connect_provider: "{{ openid_provider_check_out.open_id_connect_providers[0] }}"
+
+#- name: "Tags update"
+#  debug:
+#    var: open_id_connect_provider
+
+- name: "Test::Check the Tags Updated Provider"
+  assert:
+    that:
+      - open_id_connect_provider.Tags | length == 2
+      - "{{ open_id_connect_provider.Tags.Subject == 'Test' }}"
+      - "{{ open_id_connect_provider.Tags.Name == 'test-add' }}"
+
+- name: "Test::Purge Tags - for OpenID Connect Provider with {{ url }}"
+  aws_open_id_connect_provider:
+    state: present
+    url: "{{ url }}"
+    tags:
+      Name: test-add
+  register: openid_provider_update
+
+- name: "Test::Purge Tags - Retrieve Test OpenID Connect Provider Info"
+  aws_open_id_connect_provider_info:
+    url: "{{ url }}"
+  register: openid_provider_check_out
+
+- name: "Test::Purge Tags - Set Updated Provider Fact"
+  set_fact:
+    open_id_connect_provider: "{{ openid_provider_check_out.open_id_connect_providers[0] }}"
+
+#- name: "Test::Purge Tags"
+#  debug:
+#    var: open_id_connect_provider
+
+- name: "Test::Purge Tags Check Updated Provider"
+  assert:
+    that:
+      - open_id_connect_provider.Tags | length == 1
+      - "{{ open_id_connect_provider.Tags.Name == 'test-add' }}"

@@ -1,0 +1,146 @@
+---
+- name: "Get AZ for {{ aws_region }}"
+  amazon.aws.aws_az_info:
+    region: "{{ aws_region }}"
+  register: rds_az_info
+
+- name: "Set VPC AWS Facts"
+  set_fact:
+    ipaddr_pattern: "^(?P<one>\\d{1,3}\\.)(?P<two>\\d{1,3}\\.)(?P<three>\\d{1,3}\\.)(?P<four>\\d{1,3})$"
+    rds_az_zones: "{{ rds_az_info | json_query('availability_zones[*].zone_name') }}"
+    rds_vpc_subnet_cidrs: []
+
+- name: "RDS::Set Subnet CIDR Fact"
+  set_fact:
+    rds_vpc_subnet_cidrs: "{{ rds_vpc_subnet_cidrs + [ rds_vpc_host | regex_replace(ipaddr_pattern,'\\g<one>\\g<two>'~(rosa_demos_idx|string)~'.\\g<four>'~'/'~rds_vpc_subnet_prefix) ] }}"
+  loop: "{{ rds_az_zones }}"
+  loop_control:
+    extended: true
+    index_var: rosa_demos_idx
+    loop_var: rosa_demos_item
+
+# - debug:
+#     var: rds_vpc_subnet_cidrs
+
+- name: "RDS::Create VPC {{ rds_vpc_name }}"
+  amazon.aws.ec2_vpc_net:
+    name: "{{ rds_vpc_name }}"
+    cidr_block: "{{ rds_vpc_cidr }}"
+    region: "{{ aws_region }}"
+    tags:
+      module: rosa-demos
+      purpose: rds
+  register: rds_vpc
+
+- name: "RDS::Set VPC {{ rds_vpc_name }} ID Fact"
+  set_fact:
+    rds_vpc_id: "{{ rds_vpc.vpc.id }}"
+
+- name: "RDS::Create VPC {{ rds_vpc_name }} Subnets"
+  amazon.aws.ec2_vpc_subnet:
+    vpc_id: "{{ rds_vpc_id }}"
+    cidr: "{{ rosa_demos_item.0 }}"
+    region: "{{ aws_region }}"
+    az: "{{ rosa_demos_item.1 }}"
+    tags:
+      module: rosa-demos
+      purpose: rds
+  with_together:
+    - "{{ rds_vpc_subnet_cidrs }}"
+    - "{{ rds_az_zones }}"
+  register: rds_subnets
+  loop_control:
+    loop_var: rosa_demos_item
+
+# - debug:
+#     var: rds_subnets
+
+- name: "RDS::Gather VPC Subnet IDs"
+  set_fact:
+    rds_vpc_subnet_ids: "{{ rds_subnets | json_query('results[*].subnet.id') }}"
+
+- name: "RDS::Route Table Info"
+  community.aws.ec2_vpc_route_table_info:
+    region: "{{ aws_region }}"
+    filters:
+      vpc-id: "{{ rds_vpc_id }}"
+  register: rds_rtbs
+
+# - debug:
+#     var: rds_rtbs
+
+# Expecting only one to be here
+- name: "Get all RDS Subnet Ids"
+  set_fact:
+    rds_route_table_id: "{{ rds_subnets | json_query('route_tables[0].id') }}"
+
+# TODO - (kamesh) improve ??
+- name: "RDS::Name and Associate subnets"
+  community.aws.ec2_vpc_route_table:
+    vpc_id: "{{ rds_vpc_id }}"
+    region: "{{ aws_region }}"
+    route_table_id: "{{ rds_route_table_id }}"
+    purge_subnets: false
+    purge_routes: false
+    subnets: "{{ rds_vpc_subnet_ids }}"
+    tags:
+      Name: "rosa-demos-rds-private-{{ aws_region }}"
+      module: rosa-demos
+      purpose: rds
+  register: rds_route_table
+
+# - name: Subnet Output
+#   debug:
+#     var: rds_vpc_subnet_ids
+
+- name: "RDS::DB Subnet Group"
+  community.aws.rds_subnet_group:
+    state: present
+    name: "{{ rds_subnet_group }}"
+    description: ROSA RDS Demo Subnet Groups
+    subnets: "{{ rds_vpc_subnet_ids }}"
+    region: "{{ aws_region }}"
+
+- name: "RDS::Create VPC Security Group"
+  amazon.aws.ec2_group:
+    name: "Rosa Demos Security {{ rds_db_engine }} Group"
+    description: "Security Group RDS {{ rds_db_engine }}"
+    region: "{{ aws_region }}"
+    vpc_id: "{{ rds_vpc_id }}"
+    rules: []
+    tags:
+      module: rosa-demos
+      db: "{{ rds_db_engine }}"
+  register: rds_vpc_db_sg
+
+# - debug:
+#     var: rds_vpc_db_sg
+
+- name: "Set RDS DB Security Group Facts"
+  set_fact:
+    rds_vpc_db_sg_group_id: "{{ rds_vpc_db_sg.group_id }}"
+    rds_vpc_db_sg_group_name: "{{ rds_vpc_db_sg.group_name }}"
+    rds_vpc_db_sg_description: "{{ rds_vpc_db_sg.description }}"
+
+- name: "RDS::Create Database"
+  community.aws.rds_instance:
+    region: "{{ aws_region }}"
+    db_name: "{{ rds_database_name }}"
+    engine: "{{ rds_db_engine }}"
+    engine_version: "{{ rds_db_engine_version }}"
+    db_instance_identifier: "{{ rds_instance_id }}-{{ rds_db_engine }}"
+    db_instance_class: "{{ rds_db_instance_type }}"
+    master_username: "{{ rds_master_username }}"
+    master_user_password: "{{ rds_master_password }}"
+    db_subnet_group_name: "{{ rds_subnet_group }}"
+    allocated_storage: 10
+    backup_retention_period: 0
+    enable_iam_database_authentication: "{{ rds_iam_database_authentication }}"
+    enable_performance_insights: false
+    publicly_accessible: false
+    storage_type: standard
+    vpc_security_group_ids:
+      - "{{ rds_vpc_db_sg_group_id }}"
+    tags:
+      module: rosa-demos
+  register: rds_create

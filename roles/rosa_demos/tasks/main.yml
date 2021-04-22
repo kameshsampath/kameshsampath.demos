@@ -1,0 +1,33 @@
+---
+- name: "Create AWS Credentials folder"
+  file:
+    path: "/home/runner/.aws"
+    state: directory
+    mode: 0700
+  when: create_aws_credentials_file
+
+- name: "Create AWS Credentials file"
+  template:
+    src: "iam/.aws.credentials.j2"
+    dest: "/home/runner/.aws/credentials"
+    mode: 0700
+  when: create_aws_credentials_file
+
+- name: "Get Current AWS User Details"
+  amazon.aws.aws_caller_info:
+  register: aws_caller_info
+
+- include: iam/main.yml
+  when: iam
+
+- include: dynamodb/main.yml
+  when: dynamodb
+
+- include: rds/main.yml
+  when: rds
+
+- name: Delete AWS Credentials folder
+  file:
+    path: "/home/runner/.aws"
+    state: absent
+  when: rollback and create_aws_credentials_file

@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "{{ openid_provider_arn }}"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "{{ oidc_issuer_path }}:aud": "sts.amazonaws.com","{{ oidc_issuer_path }}:sub": "system:serviceaccount:rosa-demos:rosa-demo-sa"
+        }
+      }
+    }
+  ]
+}

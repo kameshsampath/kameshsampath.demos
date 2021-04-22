@@ -1,0 +1,31 @@
+galaxy_info:
+  author: Kamesh Sampath
+  namespace: kameshsampath
+  role_name: rosa_demos
+  description: ROSA Demos Utility Scripts
+
+  issue_tracker_url: http://github.com/kameshsampath/ansible-role-rosa-demos
+
+  license: license (Apache-2.0)
+
+  min_ansible_version: 2.9
+
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - openshift
+    - aws
+    - rosa
+    - oidc
+    - demos
+
+dependencies:
+  []

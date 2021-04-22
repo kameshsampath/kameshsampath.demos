@@ -1,0 +1,79 @@
+#Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/*
+!bin/self-hosted-darwin
+!bin/self-hosted-linux
+
+# IntelliJ
+.idea
+*.ipr
+*.iml
+*.iws
+
+# NetBeans
+nb-configuration.xml
+
+# Visual Studio Code
+.vscode
+.factorypath
+
+# OSX
+.DS_Store
+
+# Vim
+*.swp
+*.swo
+
+# patch
+*.orig
+*.rej
+
+.env
+**/work/
+.kube
+playbook.yml
+project
+work
+# this should be enabled later
+playbook
+.cache
+temp.json
+modules/my_test.py
+
+hacking/*.json
+hacking/*.pem
+hacking/*.pub
+hacking/openid-configuration
+
+integration_config.yml
+collections
+playbooks
+playbook.yml
+hacking
+*.tar.gz
+tests/output
+/molecule/host_vars/**
+!/molecule/host_vars/instance.template
+
+__pycache__
+documentation/.collections
+documentation/build
+
+# Ansible build ee excludes
+builder-ee/.env
+builder-ee/work/
+builder-ee/.kube
+builder-ee/playbook.yml
+builder-ee/project
+builder-ee/context
+builder-ee/_build
+builder-ee/Dockerfile

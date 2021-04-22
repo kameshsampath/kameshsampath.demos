@@ -1,0 +1,8 @@
+integration_tests_dependencies:
+- amazon.aws >= 1.4.0
+- community.aws >=1.4.0
+- community.kubernetes >= 1.2.0
+- community.crypto >= 1.6.0
+unit_tests_dependencies:
+- amazon.aws >= 1.4.0
+- community.internal_test_tools

@@ -1,0 +1,24 @@
+---
+- name: set connection information for aws modules and run tasks
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      region: "{{ aws_region }}"
+  collections:
+    - amazon.aws
+    - kameshsampath.demos
+
+  block:
+    - include: create_provider.yml
+    - include: update_provider_tags.yml
+    - include: update_provider_thumbprints.yml
+    - include: update_provider_client_ids.yml
+
+# cleanup
+  always:
+    - name: "Delete test provider with url {{ url }}"
+      aws_open_id_connect_provider:
+        url: "{{ url }}"
+        state: absent
+      ignore_errors: yes

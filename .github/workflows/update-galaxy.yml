@@ -1,0 +1,50 @@
+name: Bump Galaxy Version
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+jobs:
+  update-galaxy-yml:
+    runs-on: ubuntu-latest
+    steps:
+
+      #      - name: "Dump GitHub Context"
+      #        env:
+      #          GITHUB_CONTEXT: "${{ toJson(github) }}"
+      #        run: |
+      #          echo "$GITHUB_CONTEXT"
+
+      - uses: actions/checkout@v2
+        with:
+          ref: "${{ github.head_ref }}"
+
+      - name: Extract Release Semantic Version
+        id: release_branch
+        env:
+          RELEASE_BRANCH: "${{ github.head_ref }}"
+        run: |
+          echo "::set-output name=semver::${RELEASE_BRANCH#*v}"
+
+      - name: Set Galaxy Version
+        uses: mikefarah/yq@v4.7.0
+        with:
+          cmd: yq eval '.version = "${{ steps.release_branch.outputs.semver }}"' /github/workspace/galaxy.yml | tee /github/workspace/galaxy.yml
+
+      - name: Push galaxy.yml to release branch
+        id: push-updates
+        env:
+          GITHUB_USERNAME: "${{ github.actor }}"
+          GITHUB_USER_EMAIL: "${{ github.actor }}@users.noreply.github.com"
+          SEMVER: "${{ steps.release_branch.outputs.semver }}"
+        run: |
+          git config --global user.name "$GITHUB_USERNAME"
+          git config --global user.email "$GITHUB_USER_EMAIL"
+          git commit galaxy.yml -m "fix: Bump Galaxy version to $SEMVER"
+          git push
+        working-directory: "${{ github.workspace }}"
+
+

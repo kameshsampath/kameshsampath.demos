@@ -1,0 +1,32 @@
+---
+dependency:
+  name: galaxy
+  options:
+    ignore-errors: True
+    requirements-file: molecule/common/requirements.yml
+driver:
+  name: docker
+lint: |
+  #!/usr/bin/env bash
+  set -e
+  yamllint .
+  ansible-lint .
+platforms:
+  - name: instance
+    image: quay.io/kameshsampath/molecule-ee
+    pull: false
+provisioner:
+  name: ansible
+  log: True
+  options:
+    vvv: True
+  inventory:
+    links:
+      host_vars: ../host_vars/
+  playbooks:
+    prepare: prepare.yml
+    cleanup: cleanup.yml
+verifier:
+  name: ansible
+  playbooks:
+    converge: ${MOLECULE_PLAYBOOK:-converge.yml}

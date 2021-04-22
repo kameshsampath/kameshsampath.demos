@@ -1,0 +1,23 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:Query",
+        "dynamodb:UpdateItem"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:*:674289106061:table/{{ dynamodb_table_name }}",
+        "arn:aws:dynamodb:*:674289106061:table/{{ dynamodb_table_name }}/index/*",
+        "arn:aws:rds-db:*:674289106061:dbuser:*/{{ rds_database_user_name }}",
+        "arn:aws:dynamodb:*:674289106061:table/Fruits",
+        "arn:aws:dynamodb:*:674289106061:table/Fruits/index/*"
+      ]
+    }
+  ]
+}

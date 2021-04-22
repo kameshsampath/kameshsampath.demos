@@ -1,0 +1,30 @@
+---
+version: 1
+
+build_arg_defaults:
+  ANSIBLE_RUNNER_IMAGE: "quay.io/ansible/ansible-runner:stable-2.11-devel"
+
+# ansible_config: 'ansible.cfg'
+
+dependencies:
+  galaxy: requirements.yml
+  python: requirements.txt
+
+additional_build_steps:
+  prepend: |
+    RUN dnf -y --nodocs install wget curl tar unzip openssl jq \
+    && wget  -c https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable-4.7/openshift-client-linux.tar.gz -O - | tar --exclude='README.md' -C /usr/local/bin  -zx \
+    && cd /tmp \
+    && wget -O awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" \
+    && unzip awscliv2.zip \
+    && ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update \
+    && wget -O/usr/local/bin/rosa https://github.com/openshift/rosa/releases/download/v1.0.5/rosa-linux-amd64 \
+    && wget -O/usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_amd64 \
+    && wget -O/usr/local/bin/self-hosted-linux https://github.com/kameshsampath/ansible-role-rosa-demos/raw/master/bin/self-hosted-linux \
+    && chmod +x /usr/local/bin/oc /usr/local/bin/kubectl /usr/local/bin/rosa /usr/local/bin/yq /usr/local/bin/self-hosted-linux \
+    && dnf -y clean all
+  append:
+    - RUN oc version
+    - RUN kubectl version
+    - RUN rosa version
+    - RUN aws --version

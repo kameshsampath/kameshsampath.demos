@@ -1,0 +1,51 @@
+---
+- name: Delete keys.json
+  file:
+    path: keys.json
+    state: absent
+
+- name: Delete Signer Public Key
+  file:
+    path: "{{ pkcs_key_file }}"
+    state: absent
+
+- name: Delete OpenId Configuration
+  file:
+    path: openid-configuration
+    state: absent
+
+- name: "Delete OIDC Bucket::{{ oidc_bucket_name }}"
+  amazon.aws.aws_s3:
+    bucket: "{{ oidc_bucket_name }}"
+    region: "{{ aws_region }}"
+    mode: delete
+
+- name: "Delete OpenID Connect Provider"
+  kameshsampath.demos.aws_open_id_connect_provider:
+    url: "{{ oidc_issuer_url }}"
+    state: absent
+
+- name: "Delete IAM Role::{{ rosa_demo_role_name }}"
+  community.aws.iam_role:
+    name: "{{ rosa_demo_role_name }}"
+    purge_policies: false
+    state: absent
+
+- name: "Delete Managed IAM Policy::{{ rosa_demo_policy_name }}"
+  community.aws.iam_managed_policy:
+    policy_name: "{{ rosa_demo_policy_name }}"
+    state: absent
+
+- name: "Reset OIDC ServiceAccount Issuer"
+  set_fact:
+    oidc_issuer_url: ''
+
+- name: Remove OpenShift Authentication
+  community.kubernetes.k8s:
+    api_version: config.openshift.io/v1
+    kind: Authentication
+    name: cluster
+    namespace: config
+    merge_type: merge
+    definition: "{{ lookup('template', 'openshift-oauth.yaml.j2') | from_yaml }}"
+

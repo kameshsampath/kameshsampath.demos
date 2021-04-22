@@ -1,0 +1,22 @@
+---
+- name: "IAM:: Set IAM Facts"
+  set_fact:
+    openid_provider_arn: "arn:aws:iam::{{ aws_caller_info.account }}:oidc-provider/s3.{{ aws_region }}.amazonaws.com/{{ oidc_bucket_name }}"
+    rosa_demo_role_arn: "arn:aws:iam::{{ aws_caller_info.account }}:role/{{ rosa_demo_role_name }}"
+    rosa_demo_policy_arn: "arn:aws:iam::{{ aws_caller_info.account }}:policy/{{ rosa_demo_policy_name }}"
+    oidc_issuer_path: "s3.{{ aws_region }}.amazonaws.com/{{ oidc_bucket_name }}"
+
+- include: iam/rollback.yml
+  when: rollback
+
+- include: iam/setup.yml
+  when: not rollback
+
+- name: "IAM::Set OpenShift Authentication"
+  community.kubernetes.k8s:
+    api_version: config.openshift.io/v1
+    kind: Authentication
+    name: cluster
+    namespace: config
+    apply: yes
+    definition: "{{ lookup('template', 'openshift-oauth.yaml.j2') | from_yaml }}"

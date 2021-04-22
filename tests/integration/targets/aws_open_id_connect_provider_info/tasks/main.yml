@@ -1,0 +1,91 @@
+---
+- name: set connection information for aws modules and run tasks
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      region: "{{ aws_region }}"
+  collections:
+    - amazon.aws
+    - kameshsampath.demos
+
+  block:
+
+    - name: "Test::Create Test OpenID Connect Provider with {{ url }}"
+      aws_open_id_connect_provider:
+        state: present
+        url: "{{ url }}"
+        tags:
+          Name: test-add
+          Subject: Test
+
+    - name: "Test::Check if OpenID Connect Provider with url {{ url }} Exists"
+      kameshsampath.demos.aws_open_id_connect_provider_info:
+        url: "{{ url }}"
+      register: openid_provider_check_out
+
+#    - debug:
+#        var: openid_provider_check_out
+
+    - name: "Test:: Only one Provider with url '{{ url }}' should Exist"
+      assert:
+        that:
+          - openid_provider_check_out is defined
+          - openid_provider_check_out.provider_exist
+          - openid_provider_check_out.open_id_connect_providers |  length == 1
+
+    - name: "Test:: Set Provider Facts"
+      set_fact:
+        openid_provider: "{{ openid_provider_check_out.open_id_connect_providers[0] }}"
+
+    - name: "Test:: Assert Provider with url '{{ url }}' Thumbprint Details"
+      assert:
+        that:
+          - openid_provider is defined
+          - openid_provider.ThumbprintList | length == 1
+          - "{{ openid_provider.ThumbprintList[0] == 'a9d53002e97e00e043244f3d170d6f4c414104fd' }}"
+
+    - name: "Test:: Assert Provider with url '{{ url }}' Client ID Details"
+      assert:
+        that:
+          - openid_provider is defined
+          - openid_provider.ClientIDList | length == 1
+          - "{{ openid_provider.ClientIDList[0] == 'sts.amazonaws.com' }}"
+
+    - name: "Test:: Assert Provider with url '{{ url }}' Tags Details"
+      assert:
+        that:
+          - openid_provider is defined
+          - openid_provider.Tags | length == 2
+          - "{{ openid_provider.Tags.Name == 'test-add' }}"
+          - "{{ openid_provider.Tags.Subject == 'Test' }}"
+
+    - name: "Test::Check if OpenID Connect Provider with url '{{ url }}' Exists"
+      aws_open_id_connect_provider_info:
+        url: "https://test.org"
+      register: openid_provider_check_out
+
+    - name: "Test:: Provider with url https://test.org should not Exist"
+      assert:
+        that:
+          - openid_provider_check_out is defined
+          - not openid_provider_check_out.provider_exist
+
+    - name: "Test::Get List of OpenID Connect Providers"
+      aws_open_id_connect_provider_info:
+      register: openid_provider_check_out
+
+    - name: "Test:: List of Providers should Exist"
+      assert:
+        that:
+          - openid_provider_check_out is defined
+          - not openid_provider_check_out.provider_exist
+          - openid_provider_check_out.open_id_connect_providers |  length >= 1
+
+  # cleanup
+  always:
+    - name: "Delete test provider with url {{ url }}"
+      aws_open_id_connect_provider:
+        url: "{{ url }}"
+        state: absent
+      ignore_errors: yes

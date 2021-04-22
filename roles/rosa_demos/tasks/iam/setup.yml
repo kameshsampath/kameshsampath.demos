@@ -1,0 +1,98 @@
+---
+- name: "IAM::Get Service Account Signer Key"
+  community.kubernetes.k8s:
+    api_version: v1
+    kind: ConfigMap
+    name: bound-sa-token-signing-certs
+    namespace: openshift-kube-apiserver
+  register: sa_signer_cm_out
+
+- name: "IAM::Save Signer Public Key"
+  copy:
+    dest: "{{ pkcs_key_file }}"
+    content: "{{ sa_signer_cm_out.result.data['service-account-001.pub'] }}"
+    mode: 0755
+  when: sa_signer_cm_out and  sa_signer_cm_out.result
+
+- name: "IAM::Generate keys.json Content"
+  ansible.builtin.command:
+    argv:
+      - "{{ self_hosted_binary }}"
+      - -key
+      - "{{ pkcs_key_file }}"
+  changed_when: false
+  register: keys_out
+
+- name: "IAM::Save keys.json"
+  template:
+    dest: keys.json
+    src: "iam/keys.json.j2"
+    mode: "0755"
+
+- name: "IAM::Generate openid-configuration"
+  template:
+    dest: openid-configuration
+    src: iam/openid-configuration
+    mode: "0755"
+  when: keys_out.rc == 0
+
+- name: "IAM::Create OIDC Bucket::{{ oidc_bucket_name }}"
+  amazon.aws.aws_s3:
+    bucket: "{{ oidc_bucket_name }}"
+    region: "{{ aws_region }}"
+    mode: create
+
+- name: "IAM::Upload OIDC Assets to Bucket::{{ oidc_bucket_name }}"
+  amazon.aws.aws_s3:
+    bucket: "{{ oidc_bucket_name }}"
+    region: "{{ aws_region }}"
+    object: "{{ rosa_demos_item.object }}"
+    src: "{{ rosa_demos_item.src }}"
+    permission: "public-read"
+    overwrite: "different"
+    mode: put
+  with_items:
+    - src: "openid-configuration"
+      object: ".well-known/openid-configuration"
+    - src: "keys.json"
+      object: "keys.json"
+  loop_control:
+    loop_var: rosa_demos_item
+
+- name: "IAM::Verify OIDC Public Assets"
+  uri:
+    url: "https://s3.{{ aws_region }}.amazonaws.com/{{ oidc_bucket_name }}/{{ rosa_demos_item }}"
+  with_items:
+    - "keys.json"
+    - ".well-known/openid-configuration"
+  loop_control:
+    loop_var: rosa_demos_item
+
+- name: "IAM::Create OpenID Connect Provider"
+  kameshsampath.demos.aws_open_id_connect_provider:
+    region: "{{ aws_region }}"
+    url: "{{ oidc_issuer_url }}"
+    client_ids:
+      - sts.amazonaws.com
+    state: present
+    tags:
+      Name: rosa-demos-oidc
+      Subject: Demos
+  register: openid_provider_out
+
+- name: "IAM::Create IAM Managed Policy::{{ rosa_demo_policy_name }}"
+  community.aws.iam_managed_policy:
+    policy_name: "{{ rosa_demo_policy_name }}"
+    policy_description: "Policy for ROSA Demos"
+    policy: "{{ lookup('template', 'iam/policy.json') }}"
+    state: present
+  register: rosa_demos_policy_out
+
+- name: "IAM::Create IAM Role::{{ rosa_demo_role_name }}"
+  community.aws.iam_role:
+    name: "{{ rosa_demo_role_name }}"
+    assume_role_policy_document: "{{ lookup('template','iam/trust-relationships.json') }}"
+    description: "The ROSA Demos Role"
+    managed_policy:
+      - "{{ rosa_demos_policy_out.policy.arn }}"
+  register: rosa_demos_role_out

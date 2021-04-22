@@ -1,0 +1,230 @@
+---
+#########################################################
+### Accepter VPC
+#########################################################
+- name: "RDS::Get VPC Info"
+  amazon.aws.ec2_vpc_net_info:
+    region: "{{ aws_region }}"
+    filters:
+      "tag:module": "rosa-demos"
+  register: target_vpc
+
+- name: "RDS::Get VPC Details"
+  set_fact:
+    target_vpc_id: "{{ target_vpc.vpcs[0].vpc_id }}"
+    target_vpc_cidr: "{{ target_vpc.vpcs[0].cidr_block }}"
+    target_vpc_owner_id: "{{ target_vpc.vpcs[0].owner_id }}"
+  when: target_vpc.vpcs | length == 1
+
+#########################################################
+### Requester VPC
+#########################################################
+
+- name: "ROSA::Get VPC Info"
+  amazon.aws.ec2_vpc_net_info:
+    region: "{{ aws_region }}"
+  register: source_vpc
+
+- name: "ROSA::Get VPC Details"
+  set_fact:
+    source_vpc_id: "{{ rosa_demos_item.vpc_id }}"
+    source_vpc_cidr: "{{ rosa_demos_item.cidr_block }}"
+    source_vpc_owner_id: "{{ rosa_demos_item.owner_id }}"
+  loop: "{{ source_vpc.vpcs }}"
+  when:
+    - rosa_demos_item.tags
+    - rosa_demos_item.tags.Name | regex_search(rosa_cluster_vpc_regx)
+  loop_control:
+    extended: true
+    label: "{{ rosa_demos_item.vpc_id | default('') }}"
+    loop_var: rosa_demos_item
+
+# - name: "Source VPC Details"
+#   debug:
+#     msg: "{{ source_vpc_id }} CIDR {{ source_vpc_cidr }}"
+
+# - name: "Target VPC Details"
+#   debug:
+#     msg: "{{ target_vpc_id }} CIDR {{ target_vpc_cidr }}"
+
+#########################################################
+### Requester to Accepter VPC Peering (OpenShift to RDS)
+#########################################################
+- name: "ROSA OpenShift to RDS VPC Peering"
+  community.aws.ec2_vpc_peer:
+    region: "{{ aws_region }}"
+    peer_vpc_id: "{{ target_vpc_id }}"
+    vpc_id: "{{ source_vpc_id }}"
+    state: present
+    tags:
+      Name: ROSA To RDS
+      module: rosa-demos
+  register: rosa_rds_vpc_peer
+  when: source_vpc_id is defined and target_vpc_id is defined
+
+# - debug:
+#     var: rosa_rds_vpc_peer
+
+- name: "ROSA::Peering Extract Peer Id"
+  set_fact:
+    rosa_rds_peer_id: "{{ rosa_rds_vpc_peer.peering_id }}"
+
+- name: "Accept::ROSA OpenShift to RDS VPC Peering"
+  community.aws.ec2_vpc_peer:
+    region: "{{ aws_region }}"
+    peering_id: "{{ rosa_rds_peer_id }}"
+    state: accept
+  register: rosa_action_peer
+
+# - debug:
+#     var: rosa_action_peer
+#######################################
+### Requester Route Tables (OpenShift)
+#######################################
+
+- name: "ROSA::Route Table Info"
+  community.aws.ec2_vpc_route_table_info:
+    region: "{{ aws_region }}"
+    filters:
+      vpc-id: "{{ source_vpc_id }}"
+  register: source_rtbs
+
+# - name: Display Source Table Details
+#   debug:
+#     var: source_rtbs
+
+- name: "ROSA::Private Route Table Details"
+  set_fact:
+    source_rtb_id: "{{ rosa_demos_item.id }}"
+    source_rtb_routes: "{{ rosa_demos_item.routes }}"
+  loop: "{{ source_rtbs.route_tables }}"
+  when:
+    - rosa_demos_item.associations | length >= 1
+    - rosa_demos_item.tags
+    - rosa_demos_item.tags.Name | regex_search(rosa_private_route_table_regx)
+  loop_control:
+    extended: true
+    loop_var: rosa_demos_item
+    label: "{{ rosa_demos_item.tags.Name | default('Route Table ' + rosa_demos_item.id ) }}"
+
+# - debug:
+#     var: source_rtb_id
+
+- name: "ROSA::Add Peer Connection to Route Table"
+  set_fact:
+    rosa_to_rds_route:
+      vpc_peering_connection_id: "{{ rosa_rds_peer_id }}"
+      dest: "{{ rds_vpc_cidr }}"
+
+# - debug:
+#     var: rosa_to_rds_route
+
+- name: "ROSA::Add Route to RDS"
+  community.aws.ec2_vpc_route_table:
+    lookup: "id"
+    vpc_id: "{{ source_vpc_id }}"
+    region: "{{ aws_region }}"
+    route_table_id: "{{ source_rtb_id }}"
+    purge_routes: false
+    routes:
+      - "{{ rosa_to_rds_route }}"
+  register: source_rtbs_peer
+
+# - debug:
+#     var: source_rtbs_peer
+
+#######################################
+### Accepter Route Tables (RDS)
+#######################################
+
+- name: "RDS::Route Table Info"
+  community.aws.ec2_vpc_route_table_info:
+    region: "{{ aws_region }}"
+    filters:
+      vpc-id: "{{ target_vpc_id }}"
+      "tag:Name": "rosa-demos-rds-private-{{ aws_region }}"
+  register: target_route_tables
+
+# - name: "RDS::Display Taget Table Details"
+#   debug:
+#     var: target_route_tables
+
+- name: "RDS::Private Route Table Details"
+  set_fact:
+    target_rtb_id: "{{ rosa_demos_item.id }}"
+    target_rtb_routes: "{{ rosa_demos_item.routes }}"
+  loop: "{{ target_route_tables.route_tables }}"
+  when:
+    - rosa_demos_item.associations | length >= 1
+    - target_route_tables.route_tables | length == 1
+  loop_control:
+    extended: true
+    loop_var: rosa_demos_item
+    label: "{{ rosa_demos_item.tags.Name | default( 'Route Table ' + rosa_demos_item.id ) }}"
+
+# - debug:
+#     var: target_rtb_id
+
+- name: "RDS::ROSA Peer Connection Route"
+  set_fact:
+    rds_to_rosa_route:
+      vpc_peering_connection_id: "{{ rosa_rds_peer_id }}"
+      dest: "{{ source_vpc_cidr }}"
+
+# - debug:
+#     var: rds_to_rosa_route
+
+- name: "RDS::Add Route to ROSA"
+  community.aws.ec2_vpc_route_table:
+    lookup: "id"
+    vpc_id: "{{ target_vpc_id }}"
+    region: "{{ aws_region }}"
+    route_table_id: "{{ target_rtb_id }}"
+    purge_routes: false
+    routes:
+      - "{{ rds_to_rosa_route }}"
+  register: source_rtbs_peer
+
+##################################################################
+## Update RDS Security Group  to allow incoming from ROSA
+##################################################################
+
+- name: "RDS::Get DB Instance Info"
+  community.aws.rds_instance_info:
+    region: "{{ aws_region }}"
+    db_instance_identifier: "{{ rds_instance_id }}-{{ rds_db_engine }}"
+  register: rds_db_info
+
+# - debug:
+#     var: rds_db_info
+
+- name: "RDS::ROSA Peer Check DB Facts"
+  set_fact:
+    rosa_demos_rds_db_id: "{{ rosa_demos_item.db_instance_identifier }}"
+    rosa_demos_rds_db_host: "{{ rosa_demos_item.endpoint.address }}"
+    rosa_demos_rds_db_port: "{{ rosa_demos_item.endpoint.port }}"
+  when:
+    - rds_db_info.instances | length  == 1
+  loop: "{{ rds_db_info.instances }}"
+  loop_control:
+    label: "{{ rosa_demos_item.db_instance_identifier }}"
+    loop_var: rosa_demos_item
+
+- name: "RDS::Update RDS DB VPC Security Group"
+  amazon.aws.ec2_group:
+    group_id: "{{ rds_vpc_db_sg_group_id }}"
+    name: "{{ rds_vpc_db_sg_group_name }}"
+    description: "{{ rds_vpc_db_sg_description }}"
+    region: "{{ aws_region }}"
+    vpc_id: "{{ rds_vpc_id }}"
+    rules:
+      - proto: tcp
+        ports:
+          - "{{ rosa_demos_rds_db_port }}"
+        cidr_ip: "{{ source_vpc_cidr }}"
+        rule_desc: "Allow port {{ rosa_demos_rds_db_port }}"
+    tags:
+      module: rosa-demos
+      db: "{{ rds_db_engine }}"
+      source: rosa
+  register: rds_vpc_db_sg

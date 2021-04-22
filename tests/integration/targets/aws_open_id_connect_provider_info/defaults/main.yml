@@ -1,0 +1,8 @@
+---
+ansible_python_interpreter: '{{ ansible_playbook_python }}'
+aws_region: ap-southeast-1
+thumbprints:
+  - A9D53002E97E00E043244F3D170D6F4C414104FD
+client_ids:
+  - sts.amazonaws.com
+url: 'https://s3.ap-southeast-1.amazonaws.com/test-rosa-demos-oidc'

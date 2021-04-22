@@ -1,0 +1,55 @@
+---
+- name: "Test::Check if OpenID Connect Provider with url {{ url }} Exists"
+  aws_open_id_connect_provider_info:
+    url: "{{ url }}"
+  register: openid_provider_check_out
+
+- name: "Test::Create Test OpenID Connect Provider with {{ url }}"
+  aws_open_id_connect_provider:
+    state: present
+    url: "{{ url }}"
+    client_ids:
+      - sts.amazonaws.com
+  register: openid_provider_add
+
+- name: "Test::Retrieve Test OpenID Connect Provider Info"
+  aws_open_id_connect_provider_info:
+    url: "{{ url }}"
+  register: openid_provider_check_out
+
+- name: "Test::Set the Added Test OpenID Connect Provider Fact"
+  set_fact:
+    openid_provider_added: "{{ openid_provider_check_out.open_id_connect_providers[0] }}"
+
+- debug:
+    var: openid_provider_added
+
+- name: "Test:: Check Added Provided Arn is same as Retrieved"
+  assert:
+    that:
+      - openid_provider_add is defined
+      - openid_provider_check_out.provider_exist
+      - openid_provider_check_out.open_id_connect_providers | length == 1
+      - openid_provider_add.Arn == openid_provider_added.Arn
+      - openid_provider_added.ThumbprintList | length == 1
+      - "{{ openid_provider_added.ThumbprintList[0] == 'a9d53002e97e00e043244f3d170d6f4c414104fd' }}"
+      - "{{ openid_provider_added.Url == url }}"
+
+- name: "Test::Delete a non existing  OpenID Connect Provider with https://example.com"
+  aws_open_id_connect_provider:
+    state: absent
+    url: "https://example.com"
+  register: openid_provider_delete
+
+- name: "Test:: Check Delete Info of a non existing  OpenID Connect Provider"
+  assert:
+    that:
+      - openid_provider_delete is defined
+      - not openid_provider_delete.changed
+
+- name: "Test::Fail with non https url for OpenID Connect Provider with http://example.com"
+  aws_open_id_connect_provider:
+    state: absent
+    url: "http://example.com"
+  register: openid_provider_error
+  ignore_errors: true

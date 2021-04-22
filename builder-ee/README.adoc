@@ -1,0 +1,18 @@
+= OpenShift Demos Ansible Execution Environment
+
+Set of Ansible scripts and execution environment that can be used to set up OpenShift and underlying cloud provider resources.
+
+== Building Execution Environment 
+
+The project uses https://github.com/ansible/ansible-builder[Ansible Builder] as execution environment to run the Ansible playbooks.
+
+The image is available at `quay.io/kameshsampath/demos-ansible-ee`
+
+=== Build it locally
+
+Copy the file `.env.example` to `.env` and adjust the values for your needs.
+
+[source,bash]
+----
+make buildee
+----

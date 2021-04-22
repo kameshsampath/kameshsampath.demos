@@ -1,0 +1,22 @@
+---
+- name: Prepare
+  hosts: instance
+
+  collections:
+    - community.kubernetes
+
+  vars:
+      ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+
+    - name: "Login to OpenShift Cluster with Token"
+      ansible.builtin.command:
+        argv:
+          - oc
+          - login
+          - --token
+          - "{{ api_key }}"
+          - "{{ host }}"
+      when: api_key
+      register: logged_in_with_api

@@ -1,0 +1,65 @@
+#######################################################################################
+## Client IDs Update
+#######################################################################################
+- name: "Test::Client IDs - for OpenID Connect Provider with {{ url }}"
+  aws_open_id_connect_provider:
+    state: present
+    url: "{{ url }}"
+    client_ids:
+      - my.client.id
+  register: openid_provider_update
+
+- name: "Test::Client IDs - Retrieve Test OpenID Connect Provider Info"
+  aws_open_id_connect_provider_info:
+    url: "{{ url }}"
+  register: openid_provider_check_out
+
+- name: "Test::Client IDs - Set Updated Provider Fact"
+  set_fact:
+    open_id_connect_provider_client_ids: "{{ openid_provider_check_out.open_id_connect_providers[0].ClientIDList | sort }}"
+
+#- name: "Test::Update Client IDs"
+#  debug:
+#    var: open_id_connect_provider_client_ids
+
+- name: "Test:: Check Updated Provider for Client IDs"
+  assert:
+    that:
+      - open_id_connect_provider_client_ids | length == 1
+      - "{{ open_id_connect_provider_client_ids[0] == 'my.client.id' }}"
+
+- name: "Test::No Purge Client IDs - for OpenID Connect Provider with {{ url }}"
+  aws_open_id_connect_provider:
+    state: present
+    url: "{{ url }}"
+    purge_client_ids: false
+    client_ids:
+      - my.client.id.2
+      - my.client.id.3
+      - my.client.id.4
+  register: openid_provider_update
+
+- name: "Test::No Purge Client IDs - Retrieve Test OpenID Connect Provider Info"
+  aws_open_id_connect_provider_info:
+    url: "{{ url }}"
+  register: openid_provider_check_out
+
+#- debug:
+#    var: openid_provider_check_out
+
+- name: "Test::No Purge Client IDs - Set Updated Provider Fact"
+  set_fact:
+    open_id_connect_provider_client_ids: "{{ openid_provider_check_out.open_id_connect_providers[0].ClientIDList | sort }}"
+
+#- name: "Test::No Purge Client IDs Update ClientIds"
+#  debug:
+#    var: open_id_connect_provider_client_ids
+
+- name: "Test::No Purge Client Ids Check Updated Provider for ClientIds"
+  assert:
+    that:
+      - open_id_connect_provider_client_ids | length == 4
+      - "{{ open_id_connect_provider_client_ids[0] == 'my.client.id'}}"
+      - "{{ open_id_connect_provider_client_ids[1] == 'my.client.id.2' }}"
+      - "{{ open_id_connect_provider_client_ids[2] == 'my.client.id.3' }}"
+      - "{{ open_id_connect_provider_client_ids[3] == 'my.client.id.4' }}"

@@ -1,0 +1,27 @@
+---
+- name: "Delete Kafka cluster::{{ kakfa_cluster_name }}"
+  community.kubernetes.k8s:
+    state: absent
+    definition: "{{ item | from_yaml }}"
+    wait: yes
+    wait_timeout: 180
+    wait_sleep: 10
+    wait_condition:
+      type: Ready
+      status: False
+  no_log: True
+  register: amq_streams_status
+  with_file:
+   - "{{ amq_streams_cr }}"
+
+- name: "Uninstall Operator::AMQ Streams"
+  community.kubernetes.k8s:
+    state: absent
+    definition: "{{ lookup('template','kafka/subscription.yaml.j2') | from_yaml  }}"
+    wait: yes
+
+- name: "Delete Kafka Namespace"
+  community.kubernetes.k8s:
+    state: absent
+    kind: Namespace
+    name: "{{ kakfa_cluster_namespace }}"

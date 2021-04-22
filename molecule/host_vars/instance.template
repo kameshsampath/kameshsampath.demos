@@ -1,0 +1,7 @@
+---
+ansible_user: runner
+aws_region: "aws region"
+aws_access_key_id: "aws access key id"
+aws_secret_access_key: "aws secret key"
+api_key: "OpenShift token"
+host: "OpenShift API Host"

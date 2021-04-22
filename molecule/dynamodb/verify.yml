@@ -1,0 +1,49 @@
+---
+- name: Verify
+  hosts: instance
+  gather_facts: false
+
+  collections:
+    - kameshsampath.demos
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    aws_region: ap-southeast-1
+    oidc_bucket_name: "rosa-demos-oidc"
+    oidc_issuer_url: "https://s3.{{ aws_region }}.amazonaws.com/{{ oidc_bucket_name }}"
+
+  tasks:
+    - name: "Check if OpenID Connect Provider with url {{ oidc_issuer_url }} Exists"
+      kameshsampath.demos.aws_open_id_connect_provider_info:
+        region: "{{ aws_region }}"
+        url: "{{ oidc_issuer_url }}"
+      register: openid_provider_check_out
+
+    - name: "Provider with url '{{ oidc_issuer_url }}' should Exist"
+      assert:
+        that:
+          - openid_provider_check_out is defined
+          - openid_provider_check_out.provider_exist
+          - openid_provider_check_out.open_id_connect_providers |  length == 1
+
+    - name: "Get OIDC Provider with url {{ oidc_issuer_url }} Details"
+      set_fact:
+        openid_connect_provider: "{{ openid_provider_check_out.open_id_connect_providers[0] }}"
+
+    - debug:
+        var: openid_connect_provider
+
+    - name: "Assert OpenID Provider with url '{{ oidc_issuer_url }}' Details"
+      assert:
+        that:
+          - openid_connect_provider is defined
+          - "{{ openid_connect_provider.Url == oidc_issuer_url }}"
+          - openid_connect_provider.ClientIDList | length == 1
+          - "{{ openid_connect_provider.ClientIDList[0] == 'sts.amazonaws.com' }}"
+          - openid_connect_provider.ThumbprintList | length == 1
+          - "{{ openid_connect_provider.ThumbprintList[0] == 'a9d53002e97e00e043244f3d170d6f4c414104fd'}}"
+          - openid_connect_provider.Tags | length == 2
+          - "{{ openid_connect_provider.Tags[0].Key == 'Name' }}"
+          - "{{ openid_connect_provider.Tags[0].Value == 'rosa-demos-oidc' }}"
+          - "{{ openid_connect_provider.Tags[1].Key == 'Subject' }}"
+          - "{{ openid_connect_provider.Tags[1].Value == 'Demos' }}"
