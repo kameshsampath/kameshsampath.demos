@@ -46,7 +46,7 @@ jobs:
         id: build-collection
         run: |
           poetry env use python
-          poetry run ansible-collection build --out $DIST_OUT_DIR
+          poetry run ansible-galaxy collection build --out $DIST_OUT_DIR
         env:
           DIST_OUT_DIR: "${{ github.workspace }}/${{ env.DIST_DIR }}"
 
