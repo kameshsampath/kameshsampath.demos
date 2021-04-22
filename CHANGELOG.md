@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.1.8](https://www.github.com/kameshsampath/kameshsampath.demos/compare/v0.1.7...v0.1.8) (2021-04-22)
+
+
+### Bug Fixes
+
+* ansible galaxy command to build collection ([abb478b](https://www.github.com/kameshsampath/kameshsampath.demos/commit/abb478b3bfc941aa16fc81a08a34e406f7aa9948))
+
 ### [0.1.7](https://www.github.com/kameshsampath/kameshsampath.demos/compare/v0.1.6...v0.1.7) (2021-04-22)
 
 
