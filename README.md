@@ -8,7 +8,6 @@ __WARNING__
 
     Still work in progress and subject to lot of changes
 
-
 ## Development
 
 It's recommended to use a Virtual Environment for developing. [Install Poetry](https://python-poetry.org/docs/#installation), clone the sources from https://github.com/kameshsampath/kameshsampath.demos then run:
