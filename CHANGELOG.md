@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.1.6](https://www.github.com/kameshsampath/kameshsampath.demos/compare/v0.1.5...v0.1.6) (2021-04-22)
+
+
+### Bug Fixes
+
+* fix ansible-builder command ([3cceef9](https://www.github.com/kameshsampath/kameshsampath.demos/commit/3cceef953da54f6c7f44e4330710b8dcbc4d5e07))
+
 ### [0.1.5](https://www.github.com/kameshsampath/kameshsampath.demos/compare/v0.1.4...v0.1.5) (2021-04-22)
 
 
