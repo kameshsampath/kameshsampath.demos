@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.1.9](https://www.github.com/kameshsampath/kameshsampath.demos/compare/v0.1.8...v0.1.9) (2021-04-22)
+
+
+### Bug Fixes
+
+* use PAT for artifacts upload ([4d58f0a](https://www.github.com/kameshsampath/kameshsampath.demos/commit/4d58f0ae196eee4d607ede4887997c456db8a75b))
+
 ### [0.1.8](https://www.github.com/kameshsampath/kameshsampath.demos/compare/v0.1.7...v0.1.8) (2021-04-22)
 
 
