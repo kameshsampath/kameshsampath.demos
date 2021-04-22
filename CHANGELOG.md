@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.0 (2021-04-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* First Release
+
+### Features
+
+* First Release ([9df30cd](https://www.github.com/kameshsampath/kameshsampath.demos/commit/9df30cdf85ace873ea900c14eb5ff19c5fcc5a1b))
+
 ### [0.1.2](https://www.github.com/kameshsampath/kameshsampath.demos/compare/v0.1.1...v0.1.2) (2021-04-20)
 
 
