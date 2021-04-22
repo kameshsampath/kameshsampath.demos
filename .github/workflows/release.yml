@@ -48,7 +48,7 @@ jobs:
         id: build-image
         run: |
           poetry env use python
-          poetry ansible-builder build --tag $IMAGE_TAG
+          poetry run ansible-builder build --tag $IMAGE_TAG
           podman push $IMAGE_TAG
           podman tag $IMAGE_TAG $IMAGE_LATEST
           podman push $IMAGE_LATEST
