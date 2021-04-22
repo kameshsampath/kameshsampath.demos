@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.1.1](https://www.github.com/kameshsampath/kameshsampath.demos/compare/v0.1.0...v0.1.1) (2021-04-22)
+
+
+### Bug Fixes
+
+* adding missing env to workflow ([5e2a201](https://www.github.com/kameshsampath/kameshsampath.demos/commit/5e2a2015835f52b7475602a9c9214b5524c4588d))
+
 ## 0.1.0 (2021-04-22)
 
 
