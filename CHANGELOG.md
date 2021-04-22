@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.1.7](https://www.github.com/kameshsampath/kameshsampath.demos/compare/v0.1.6...v0.1.7) (2021-04-22)
+
+
+### Bug Fixes
+
+* attach collection artifact to release ([8ee6366](https://www.github.com/kameshsampath/kameshsampath.demos/commit/8ee6366c871e8bc0be8e6ded649be948130e2638))
+
 ### [0.1.6](https://www.github.com/kameshsampath/kameshsampath.demos/compare/v0.1.5...v0.1.6) (2021-04-22)
 
 
