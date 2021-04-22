@@ -1,5 +1,14 @@
 # Changelog
 
+### [0.1.2](https://www.github.com/kameshsampath/kameshsampath.demos/compare/v0.1.1...v0.1.2) (2021-04-22)
+
+
+### Bug Fixes
+
+* revert galaxy metadata ([600f97f](https://www.github.com/kameshsampath/kameshsampath.demos/commit/600f97fc59dee0bdc6f09d5c389bbfe86558774a))
+* rollback galaxy version ([64c59b5](https://www.github.com/kameshsampath/kameshsampath.demos/commit/64c59b52b23a646443ee5da7dfdce1d493d74137))
+* use poetry in workflow ([fa783aa](https://www.github.com/kameshsampath/kameshsampath.demos/commit/fa783aa0e3c216a59027f0153c57527d97ecf35c))
+
 ### [0.1.1](https://www.github.com/kameshsampath/kameshsampath.demos/compare/v0.1.0...v0.1.1) (2021-04-22)
 
 
