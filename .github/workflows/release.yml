@@ -13,6 +13,7 @@ jobs:
       QUAYIO_REPO: quay.io/kameshsampath
       IMAGE_NAME: openshift-demos-ansible-ee
       IMAGE_TAGS: latest
+      CONTAINER_RUNTIME: docker
     strategy:
       matrix:
         python-version:
@@ -63,13 +64,16 @@ jobs:
         id: build-image
         run: |
           poetry env use python
-          poetry run ansible-builder build --tag $IMAGE_TAG
-          podman push $IMAGE_TAG
-          podman tag $IMAGE_TAG $IMAGE_LATEST
-          podman push $IMAGE_LATEST
+          poetry run ansible-builder build \
+            --container-runtime $CONTAINER_RUNTIME
+            --tag $IMAGE_TAG
+          $CONTAINER_RUNTIME push $IMAGE_TAG
+          $CONTAINER_RUNTIME tag $IMAGE_TAG $IMAGE_LATEST
+          $CONTAINER_RUNTIME push $IMAGE_LATEST
         env:
           IMAGE_TAG: "${{ env.QUAYIO_REPO }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}"
           IMAGE_LATEST: "${{ env.QUAYIO_REPO }}/${{ env.IMAGE_NAME }}:latest"
+          CONTAINER_RUNTIME: "${{ env.CONTAINER_RUNTIME }}"
         working-directory: "${{ github.workspace }}/builder-ee"
   site:
     runs-on: ubuntu-latest
