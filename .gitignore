@@ -56,8 +56,8 @@ hacking/openid-configuration
 
 integration_config.yml
 collections
+dist/*
 playbooks
-playbook.yml
 hacking
 *.tar.gz
 tests/output

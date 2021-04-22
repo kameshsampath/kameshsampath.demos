@@ -7,6 +7,55 @@ on:
   workflow_dispatch:
 
 jobs:
+  attach-collection-artifacts:
+    runs-on: ubuntu-latest
+    env:
+      DIST_DIR: dist
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: "${{ github.event.ref }}"
+
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.1.4
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+
+      - name: Build the Ansible Collections tarball
+        id: build-collection
+        run: |
+          poetry env use python
+          poetry run ansible-collection build --out $DIST_OUT_DIR
+        env:
+          DIST_OUT_DIR: "${{ github.workspace }}/${{ env.DIST_DIR }}"
+
+      - name: Attach Collection to release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "${{ github.workspace }}/dist/*.tar.gz"
+          tag: "${{ github.event.release.tag_name }}"
+          token: ${{ secrets.GITHUB_WORKFLOW_PAT }}
   ansible-builder-ee:
     runs-on: ubuntu-latest
     env:
@@ -47,8 +96,6 @@ jobs:
         with:
           path: .venv
           key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
-          restore_keys: |
-            ${{ runner.os }}-venv-
 
       - name: Install dependencies
         run: poetry install
@@ -105,8 +152,6 @@ jobs:
         with:
           path: .venv
           key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
-          restore_keys: |
-            ${{ runner.os }}-venv-
 
       - name: Install dependencies
         run: poetry install
