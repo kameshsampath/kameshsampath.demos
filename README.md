@@ -1,3 +1,5 @@
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/kameshsampath/fruits-app)
+
 # Kamesh's OpenShift/Kubernetes Demos Ansible Collection
 
 This repo contains the `kameshsampath.demos` Ansible Collection. The collection includes many modules and roles that are used as part of my [OpenShift](https://try.openshift.com) Demos. The roles and modules helps you set up and configure OpenShift resources and other underlying Cloud Provider resources.
@@ -18,3 +20,7 @@ It's recommended to use a Virtual Environment for developing. [Install Poetry](h
    poetry shell
    poetry install
 ```
+
+Or Just simply
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/kameshsampath/fruits-app)

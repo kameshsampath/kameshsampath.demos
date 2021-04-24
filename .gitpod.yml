@@ -1,0 +1,10 @@
+vscode:
+  extensions:
+    - "editorconfig.editorconfig"
+    - "ms-vscode.sublime-keybindings"
+    - "dracula-theme.theme-dracula"
+    - "ms-python.python"
+tasks:
+- init: pip install poetry && poetry install
+- name: VirutalEnv
+  init: poetry env use python
