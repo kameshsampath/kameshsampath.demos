@@ -1,4 +1,4 @@
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/kameshsampath/fruits-app)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/kameshsampath/kameshsampath.demos)
 
 # Kamesh's OpenShift/Kubernetes Demos Ansible Collection
 
@@ -23,4 +23,4 @@ It's recommended to use a Virtual Environment for developing. [Install Poetry](h
 
 Or Just simply
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/kameshsampath/fruits-app)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/kameshsampath/kameshsampath.demos)
