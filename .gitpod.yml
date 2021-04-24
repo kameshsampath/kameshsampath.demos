@@ -12,7 +12,7 @@ tasks:
     curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python - \
     && ${HOME}/.poetry/bin/poetry config virtualenvs.create "true" \
     && ${HOME}/.poetry/bin/poetry config virtualenvs.in-project "true" \
-    && poetry install
+    && ${HOME}/.poetry/bin/poetry install
 - name: Poetry Env
   init: |
     export PATH="${HOME}/.poetry/bin:$PATH"
