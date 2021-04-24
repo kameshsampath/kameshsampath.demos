@@ -77,3 +77,6 @@ builder-ee/project
 builder-ee/context
 builder-ee/_build
 builder-ee/Dockerfile
+
+!.vscode/settings.json
+.venv
