@@ -9,7 +9,9 @@ vscode:
     - "ms-python.python"
 tasks:
 - init: |
-    source "$HOME"/.poetry/env \
+    curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python - \
+    && "export PATH=\"\${HOME}/.poetry/bin\":\$PATH" >> /home/gitpod/.bashrc \
+    && source "$HOME"/.poetry/env \
     && ${HOME}/.poetry/bin/poetry config virtualenvs.create "true" \
     && ${HOME}/.poetry/bin/poetry config virtualenvs.in-project "true" \
     && poetry install
