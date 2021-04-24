@@ -13,5 +13,3 @@ tasks:
     && ${HOME}/.poetry/bin/poetry config virtualenvs.create "true" \
     && ${HOME}/.poetry/bin/poetry config virtualenvs.in-project "true" \
     && poetry install
-- name: VirutalEnv
-  init: source ${HOME}/.venv/bin/activate
