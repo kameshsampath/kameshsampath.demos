@@ -23,8 +23,9 @@ bin/*
 nb-configuration.xml
 
 # Visual Studio Code
-.vscode
 .factorypath
+.classpath
+.settings
 
 # OSX
 .DS_Store
@@ -78,5 +79,4 @@ builder-ee/context
 builder-ee/_build
 builder-ee/Dockerfile
 
-!.vscode/settings.json
 .venv

@@ -8,6 +8,10 @@ vscode:
     - "dracula-theme.theme-dracula"
     - "ms-python.python"
 tasks:
-- init: poetry install
+- init: |
+    source "$HOME"/.poetry/env \
+    && ${HOME}/.poetry/bin/poetry config virtualenvs.create "true" \
+    && ${HOME}/.poetry/bin/poetry config virtualenvs.in-project "true" \
+    && poetry install
 - name: VirutalEnv
-  init: source .venv/bin/activate
+  init: source ${HOME}/.venv/bin/activate
