@@ -50,10 +50,10 @@ playbook
 temp.json
 modules/my_test.py
 
-hacking/*.json
-hacking/*.pem
-hacking/*.pub
-hacking/openid-configuration
+**/*.json
+**/*.pem
+**/*.pub
+**/openid-configuration
 
 integration_config.yml
 collections

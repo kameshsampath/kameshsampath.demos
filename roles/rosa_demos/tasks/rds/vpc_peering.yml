@@ -33,7 +33,7 @@
   loop: "{{ source_vpc.vpcs }}"
   when:
     - rosa_demos_item.tags
-    - rosa_demos_item.tags.Name | regex_search(rosa_cluster_vpc_regx)
+    - rosa_demos_item.tags.Name is defined and rosa_demos_item.tags.Name | regex_search(rosa_cluster_vpc_regx)
   loop_control:
     extended: true
     label: "{{ rosa_demos_item.vpc_id | default('') }}"
